@@ -7,7 +7,7 @@ Persistent
 #Include logError.ahk
 #Include ReceiveToast.ahk
 ;Обзываем скрипт
-A_ScriptName := "AutoRecord"
+A_ScriptName := "AutoRecord v1.0.0"
 
 try {
   ; объект для регулировки таймингов, прерываний и доступа к функции записи
