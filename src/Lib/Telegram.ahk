@@ -72,9 +72,8 @@ Loop
         Sleep check_delay
     }
 
-    ; Подключаем внешние скрипты
-#Include %A_AppData%\AutoRecord\Lib
-#Include logInfo.ahk
-#Include logError.ahk
-#Include handleRecording.ahk
-#Include SendToast.ahk
+; Подключаем внешние скрипты
+#Include <logToFile>
+#Include <logError>
+#Include <handleRecording>
+#Include <SendToast>

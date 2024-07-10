@@ -21,7 +21,7 @@ Loop
 }
 
 ; Подключаем внешние скрипты
-#Include %A_AppData%\AutoRecord\Lib
-#Include logError.ahk
-#Include handleRecording.ahk
-#Include SendToast.ahk
+#Include <logToFile>
+#Include <logError>
+#Include <handleRecording>
+#Include <SendToast>
