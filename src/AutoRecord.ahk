@@ -1,54 +1,13 @@
-#Requires AutoHotkey v2.0-beta.1
 ; Чтобы не плодились инстансы скрипта
 #SingleInstance
 ; Не даём скрипту закрыться
 Persistent
 ; Подключаем внешние скрипты
-#Include %A_ScriptDir%\ExternalLib
-#Include WebSocket.ahk
-#Include JXON.ahk
-#Include <logError>
-#Include <logToFile>
-#Include <ReceiveToast>
-
+#Include %A_AppData%\AutoRecord\Lib
+#Include logError.ahk
+#Include ReceiveToast.ahk
 ;Обзываем скрипт
-A_ScriptName := "AutoRecord V1.1"
-
-Persistent
-
-obsConnection := WebSocket("ws://127.0.0.1:4455/", {
-    message: (self, data) => handleMessage(self, data),
-    close: (self, status, reason) => logToFile(status ' ' reason '`n'),
-})
-
-lastData := ""
-
-handleMessage(self, data) {
-    logToFile(Data '`n')
-    lastData := jxon_load(&Data)
-    OutputDebug "opCode: " lastData["op"] "`n"
-    switch lastData["op"]
-    {
-        case 0:
-            response := Format("
-            (
-            {
-            "d": {
-            "rpcVersion": {1:s}
-            },
-            "op": 1
-            }
-            )", lastData["d"]["rpcVersion"])
-            self.sendText(response)
-            logToFile(response)
-
-        case 2:
-            OutputDebug "identified`n"
-        Default:
-    }
-}
-
-OutputDebug "We goog`n"
+A_ScriptName := "AutoRecord v1.0.0"
 
 try {
   ; объект для регулировки таймингов, прерываний и доступа к функции записи
