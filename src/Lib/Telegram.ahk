@@ -46,12 +46,12 @@ Loop
                                     }
                                 }
                             }
-                            if window != telegram_id && title != "Qt51513QWindowToolSaveBits" && WinGetClass("ahk_id" window) != "Qt51513QWindowPopupSaveBits" && RegExMatch(title,"^((?>(?!TelegramDesktop).)*)$")
+                            if window != telegram_id && title != "Qt51513QWindowToolSaveBits" && WinGetClass("ahk_id " window) != "WindowShadow" && WinGetClass("ahk_id" window) != "Qt51513QWindowPopupSaveBits" && RegExMatch(title,"^((?>(?!TelegramDesktop).)*)$")
                                 handleRecording(window)
 
                         } else {
                             ; Если язык известен, то сокращаем перебор
-                            if window != telegram_id && title != "Qt51513QWindowToolSaveBits" && WinGetClass("ahk_id" window) != "Qt51513QWindowPopupSaveBits" && RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!" chosen_language[2] ")(?!TelegramDesktop).)*)$")
+                            if window != telegram_id && title != "Qt51513QWindowToolSaveBits" && WinGetClass("ahk_id " window) != "WindowShadow" && WinGetClass("ahk_id" window) != "Qt51513QWindowPopupSaveBits" && RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!" chosen_language[2] ")(?!TelegramDesktop).)*)$")
                                 handleRecording(window)
                         }
                     }
