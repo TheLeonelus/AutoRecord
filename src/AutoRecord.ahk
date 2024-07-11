@@ -1,38 +1,46 @@
 #Requires AutoHotkey v2.0-beta.1
-; Чтобы не плодились инстансы скрипта
-#SingleInstance Force
-; Не даём скрипту закрыться
+#SingleInstance
 Persistent
-; Подключаем внешние скрипты
-#Include %A_ScriptDir%\ExternalLib
-#Include WebSocket.ahk
-#Include JXON.ahk
+#Include ExternalLib\WebSocket.ahk
+#Include ExternalLib\JXON.ahk
 #Include <logError>
 #Include <logToFile>
 #Include <ReceiveToast>
-Assema Gildas Sem 20399714 – (1)
 
-;Обзываем скрипт
 A_ScriptName := "AutoRecord V1.1"
 
-Persistent
-
-obsConnection := WebSocket("ws://127.0.0.1:4455/", {
-    message: (self, data) => handleMessage(self, data),
-    close: (self, status, reason) => logToFile(status ' ' reason '`n'),
-})
-
-lastData := ""
-
-handleMessage(self, data) {
+try {
+  ; looking for obs, if not found, trying to start it
+  if !ProcessExist("obs64.exe") {
+    try {
+      Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
+      OutputDebug("OBS wasn't found, trying to start it up")
+    }
+    catch {
+      MsgBox("OBS wasn`t found. Please try to start it up manually.",,0x2)
+    }
+  }
+  try {
+    obsConnection := WebSocket("ws://127.0.0.1:4455/", {
+      message: (self, data) => handleMessage(self, data),
+      close: (self, status, reason) => logToFile(status ' ' reason '`n'),
+    })
+  } catch as e {
+    OutputDebug("websocket is ded")
+    Throw e
+  }
+    lastData := ""
+  ; handle responses from server
+  handleMessage(self, data) {
     logToFile(Data '`n')
     lastData := jxon_load(&Data)
     OutputDebug "opCode: " lastData["op"] "`n"
     switch lastData["op"]
     {
-        case 0:
-            response := Format("
-            (
+      case 0:
+        ; hello
+        response := Format("
+        (
             {
             "d": {
             "rpcVersion": {1:s}
@@ -40,36 +48,36 @@ handleMessage(self, data) {
             "op": 1
             }
             )", lastData["d"]["rpcVersion"])
-            self.sendText(response)
-            logToFile(response)
+        self.sendText(response)
+        logToFile(response)
 
-        case 2:
-            OutputDebug "identified`n"
-        Default:
+      case 2:
+        ; identify
+        OutputDebug "identified`n"
+      Default:
     }
-}
+  }
 
-OutputDebug "We goog`n"
+  OutputDebug "We goog`n"
 
-try {
   ; объект для регулировки таймингов, прерываний и доступа к функции записи
-  recStatus := CriticalObject({check_delay: 500, hotkey_delay: 50})
+  recStatus := CriticalObject({ check_delay: 500, hotkey_delay: 100 })
   ; Создаём отдельный поток для мониторинга Telegram
-  script:="
+  script := "
   (
-  recStatus:=CriticalObject(a_args[1])
-  lpCS:=CriticalObject(recStatus,2)
-  check_delay := recStatus.check_delay
-  hotkey_delay := recStatus.hotkey_delay
-  #Include %A_AppData%\AutoRecord\Lib\Telegram.ahk
-  )"
+    recStatus := CriticalObject(a_args[1])
+    lpCS := CriticalObject(recStatus,2)
+    check_delay := recStatus.check_delay
+    hotkey_delay := recStatus.hotkey_delay
+    #Include %A_AppData%\AutoRecord\Lib\Telegram.ahk
+    )"
   tgTd := ThreadObj(script, ObjPtr(recStatus) "")
   ; Создаём отдельный поток для мониторинга Whatsapp
-  script:="
+  script := "
   (
-  recStatus:=CriticalObject(a_args[1]) ; get CriticalObject from pointer
-  lpCS:=CriticalObject(recStatus,2) ; get CriticalSection
-  check_delay := recStatus.check_delay
+    recStatus := CriticalObject(a_args[1]) ; get CriticalObject from pointer
+    lpCS := CriticalObject(recStatus,2) ; get CriticalSection
+    check_delay := recStatus.check_delay
   hotkey_delay := recStatus.hotkey_delay
   #Include %A_AppData%\AutoRecord\Lib\Whatsapp.ahk
   )"
