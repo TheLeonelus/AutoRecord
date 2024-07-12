@@ -1,6 +1,6 @@
 ﻿#NoTrayIcon
 
-SendToast("Telegram module initialized.")
+SendMiddlewareMessage("Telegram module initialized.", 0xFF01)
 
 telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 telegram_pid := WinGetPID("ahk_exe Telegram.exe")
@@ -42,44 +42,44 @@ Loop
                 }
                 ; Label for exiting outer Loop
                 languageDefining:
-                for window in telegram_window_list {
-                    title := WinGetTitle("ahk_id " window)
-                    if chosen_language.Length = 0 {
-                        ; If language is unknown - try to define it, then start record
-                        for language in languages_array {
-                            for title_string in language {
-                                if InStr(title, title_string) != 0 {
-                                    chosen_language := language
-                                    SendToast("Telegram`'s language is defined as " chosen_language[3])
-                                    break languageDefining
+                    for window in telegram_window_list {
+                        title := WinGetTitle("ahk_id" window)
+                        if chosen_language.Length = 0 {
+                            ; If language is unknown - try to define it, then start record
+                            for language in languages_array {
+                                for title_string in language {
+                                    if InStr(title, title_string) != 0 {
+                                        chosen_language := language
+                                        SendMiddlewareMessage("Telegram`'s language is defined as " chosen_language[3], 0xFF01)
+                                        break languageDefining
+                                    }
                                 }
                             }
+                            if RegExMatch(title,"^((?>(?!TelegramDesktop).)*)$")
+                                handleRecording(window, title)
+                        } else {
+                            ; If language is defined - do simpler validation
+                            if RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!" chosen_language[2] ")(?!TelegramDesktop).)*)$")
+                                handleRecording(window, title)
                         }
-                        if RegExMatch(title, "^((?>(?!TelegramDesktop).)*)$")
-                            handleRecording(window)
-                    } else {
-                        ; If language is defined - do simpler validation
-                        if RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!" chosen_language[2] ")(?!TelegramDesktop).)*)$")
-                            handleRecording(window)
                     }
-                }
                 break_languageDefining:
             }
             ; Waiting for Telegram if it was closed
-        } else {
-            chosen_language := []
-            telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
-            telegram_pid := WinGetPID("ahk_exe Telegram.exe")
+            } else {
+                chosen_language := []
+                telegram_id := WinWait("ahk_exe Telegram.exe")
+                telegram_pid := WinGetPID("ahk_exe Telegram.exe")
+            }
         }
+        catch as e {
+            logError(e)
+        }
+        ; Delay before new loop
+        Sleep shared_obj.check_delay
     }
-    catch as e {
-        logError(e)
-    }
-    ; Delay before new loop
-    Sleep check_delay
-}
 
-#Include <logToFile>
-#Include <logError>
-#Include <handleRecording>
-#Include <SendToast>
+#Include %A_Appdata%\AutoRecord\src\Lib\logToFile.ahk
+#Include %A_Appdata%\AutoRecord\src\Lib\logError.ahk
+#Include %A_Appdata%\AutoRecord\src\Lib\handleRecording.ahk
+#Include %A_Appdata%\AutoRecord\src\Lib\SendMiddlewareMessage.ahk
