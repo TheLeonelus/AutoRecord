@@ -33,8 +33,8 @@ Loop
             if telegram_window_list.Length > 1 {
                 for i, window in telegram_window_list {
                     window_class := WinGetClass("ahk_id " window)
-                    ; remove windows with wrong class/id/title
-                    if window = telegram_id || title = "Qt51513QWindowToolSaveBits" || window_class = "WindowShadow" || window_class = "Qt51513QWindowPopupSaveBits"
+                    ; remove windows with wrong class/id
+                    if window = telegram_id || window_class = "Qt51513QWindowToolSaveBits" || window_class = "WindowShadow" || window_class = "Qt51513QWindowPopupSaveBits"
                         telegram_window_list.RemoveAt(i)
                 }
                 ; Метка для выхода из цикла
