@@ -1,15 +1,18 @@
-#Requires AutoHotkey v2.0-beta.1
 #SingleInstance
 Persistent
 #Include ExternalLib\WebSocket.ahk
 #Include ExternalLib\JXON.ahk
 #Include <logError>
 #Include <logToFile>
-#Include <ReceiveToast>
+#Include <SendNotification>
 
+if !A_IsCompiled {
+  SetWorkingDir(A_AppData "\AutoRecord\src")
+}
 A_ScriptName := "AutoRecord V1.1"
-
 try {
+  ; объект для регулировки таймингов, прерываний и доступа к функции записи
+   shared_obj := CriticalObject({ check_delay: 500, hotkey_delay: 100, last_msg: "" })
   ; looking for obs, if not found, trying to start it
   if !ProcessExist("obs64.exe") {
     try {
@@ -17,25 +20,24 @@ try {
       OutputDebug("OBS wasn't found, trying to start it up")
     }
     catch {
-      MsgBox("OBS wasn`t found. Please try to start it up manually.",,0x2)
+      MsgBox("OBS wasn`t found. Please try to start it up manually.", , 0x2)
     }
   }
   try {
-    obsConnection := WebSocket("ws://127.0.0.1:4455/", {
+    obs_connection := WebSocket("ws://127.0.0.1:4455/", {
       message: (self, data) => handleMessage(self, data),
       close: (self, status, reason) => logToFile(status ' ' reason '`n'),
     })
   } catch as e {
-    OutputDebug("websocket is ded")
+    OutputDebug("websocket is ded`n")
     Throw e
   }
-    lastData := ""
   ; handle responses from server
   handleMessage(self, data) {
     logToFile(Data '`n')
-    lastData := jxon_load(&Data)
-    OutputDebug "opCode: " lastData["op"] "`n"
-    switch lastData["op"]
+    shared_obj.last_msg := jxon_load(&Data)
+    OutputDebug "opCode: " shared_obj.last_msg["op"] "`n"
+    switch shared_obj.last_msg["op"]
     {
       case 0:
         ; hello
@@ -47,7 +49,7 @@ try {
             },
             "op": 1
             }
-            )", lastData["d"]["rpcVersion"])
+            )", shared_obj.last_msg["d"]["rpcVersion"])
         self.sendText(response)
         logToFile(response)
 
@@ -55,36 +57,43 @@ try {
         ; identify
         OutputDebug "identified`n"
       Default:
+        logToFile(Jxon_Dump(shared_obj.last_msg))
     }
   }
 
-  OutputDebug "We goog`n"
-
-  ; объект для регулировки таймингов, прерываний и доступа к функции записи
-  recStatus := CriticalObject({ check_delay: 500, hotkey_delay: 100 })
   ; Создаём отдельный поток для мониторинга Telegram
   script := "
   (
-    recStatus := CriticalObject(a_args[1])
-    lpCS := CriticalObject(recStatus,2)
-    check_delay := recStatus.check_delay
-    hotkey_delay := recStatus.hotkey_delay
-    #Include %A_AppData%\AutoRecord\Lib\Telegram.ahk
+    shared_obj := CriticalObject(a_args[1]) ; get CriticalObject from pointer
+    lpCS := CriticalObject(shared_obj,2) ; get CriticalSection
+    #Include %A_appdata%\AutoRecord\src\Lib\Telegram.ahk
     )"
-  tgTd := ThreadObj(script, ObjPtr(recStatus) "")
+  tg_td := ThreadObj(script, ObjPtr(shared_obj) "")
   ; Создаём отдельный поток для мониторинга Whatsapp
   script := "
   (
-    recStatus := CriticalObject(a_args[1]) ; get CriticalObject from pointer
-    lpCS := CriticalObject(recStatus,2) ; get CriticalSection
-    check_delay := recStatus.check_delay
-  hotkey_delay := recStatus.hotkey_delay
-  #Include %A_AppData%\AutoRecord\Lib\Whatsapp.ahk
+    shared_obj := CriticalObject(a_args[1]) ; get CriticalObject from pointer
+    lpCS := CriticalObject(shared_obj,2) ; get CriticalSection
+    #Include %A_appdata%\AutoRecord\src\Lib\Whatsapp.ahk
   )"
-  waTd := ThreadObj(script, ObjPtr(recStatus) "")
-  ; обработка сигнала на отправку Toast уведомления
-  OnMessage 0xFF01, ReceiveToast
+  wa_td := ThreadObj(script, ObjPtr(shared_obj) "") ; Here is pointer to CO
+  ; handle signal to send notification
+  OnMessage(0xFF01, SendNotification)
+  ; handle signal to send command to OBS websocket
+  OnMessage(0xFF02, sendOBSCommand)
 }
 catch as e {
   logError(e)
+}
+HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
+{
+    StringAddress := NumGet(lParam, 2*A_PtrSize, "Ptr")  ; Retrieves the CopyDataStruct's lpData member.
+    CopyOfData := StrGet(StringAddress)  ; Copy the string out of the structure.
+    ; Show it with ToolTip vs. MsgBox so we can return in a timely fashion:
+    return CopyOfData  ; Returning 1 (true) is the traditional way to acknowledge this message.
+}
+sendOBSCommand(wParam, lParam, msg, hwnd)
+{
+    response := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
+    obs_connection.sendText(response)
 }
