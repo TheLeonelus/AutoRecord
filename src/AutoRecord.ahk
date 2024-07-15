@@ -1,13 +1,10 @@
 #SingleInstance
 Persistent
-#Include ExternalLib\WebSocket.ahk
-#Include ExternalLib\JXON.ahk
-#Include <logError>
-#Include <logToFile>
-#Include <SendNotification>
 
 if !A_IsCompiled {
   SetWorkingDir(A_AppData "\AutoRecord\src")
+  MsgBox(A_AhkVersion)
+  MsgBox(A_ScriptFullPath)
 }
 A_ScriptName := "AutoRecord V1.1"
 try {
@@ -85,15 +82,18 @@ try {
 catch as e {
   logError(e)
 }
-HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
-{
-    StringAddress := NumGet(lParam, 2*A_PtrSize, "Ptr")  ; Retrieves the CopyDataStruct's lpData member.
-    CopyOfData := StrGet(StringAddress)  ; Copy the string out of the structure.
-    ; Show it with ToolTip vs. MsgBox so we can return in a timely fashion:
-    return CopyOfData  ; Returning 1 (true) is the traditional way to acknowledge this message.
-}
+
 sendOBSCommand(wParam, lParam, msg, hwnd)
 {
     response := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
+    logToFile(response)
     obs_connection.sendText(response)
+    return 
 }
+
+#Include ExternalLib\WebSocket.ahk
+#Include ExternalLib\JXON.ahk
+#Include <logError>
+#Include <logToFile>
+#Include <SendNotification>
+#Include <HandleMiddlewareMessage>
