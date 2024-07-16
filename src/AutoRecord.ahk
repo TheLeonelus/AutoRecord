@@ -1,5 +1,5 @@
 ; Чтобы не плодились инстансы скрипта
-#SingleInstance
+#SingleInstance Force
 ; Не даём скрипту закрыться
 Persistent
 ; Подключаем внешние скрипты
@@ -11,7 +11,7 @@ A_ScriptName := "AutoRecord v1.0.0"
 
 try {
   ; объект для регулировки таймингов, прерываний и доступа к функции записи
-  recStatus := CriticalObject({check_delay: 500, hotkey_delay: 100})
+  recStatus := CriticalObject({check_delay: 500, hotkey_delay: 50})
   ; Создаём отдельный поток для мониторинга Telegram
   script:="
   (
