@@ -1,6 +1,7 @@
 
 handleRecording(id) {
     if TryEnterCriticalSection(lpCS) != 0 {
+        logToFile("Starting record of: Class: " WinGetClass("ahk_id " id) " | Title: " WinGetTitle("ahk_id " id))
         ; start recording
         Send "{Ctrl down}{Alt down}{F9 down}"
         Sleep hotkey_delay
@@ -16,6 +17,9 @@ handleRecording(id) {
         Send "{Ctrl up}{Alt up}{F10 up}"
         SendToast("Request to stop recording was sent.")
         Sleep hotkey_delay
+        logToFile("Stopping record of: Class: " WinGetClass("ahk_id " id) " | Title: " WinGetTitle("ahk_id " id))
         LeaveCriticalSection(lpCS)
     }
 }
+
+#Include <logToFile>
