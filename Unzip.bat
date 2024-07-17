@@ -5,6 +5,8 @@ set "AUTO_RECORD_PATH=%APPDATA_PATH%\AutoRecord"
 set "AUTO_RECORD_EXE=%AUTO_RECORD_PATH%\AutoRecord.exe"
 set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 set "STARTUP_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
+set "DOWNLOAD_URL=https://github.com/theleonelus/autorecord/releases/latest/download/autorecord.zip
+set "ZIP_FILE=%~dp0AutoRecord.zip"  REM полный путь к текущему батчу
 
 :: Завершаем процесс AutoRecord.exe, если он запущен
 tasklist /fi "imagename eq AutoRecord.exe" | find /i "AutoRecord.exe" >nul 2>&1
@@ -21,8 +23,19 @@ if exist "%AUTO_RECORD_PATH%" (
     echo folder %AUTO_RECORD_PATH% deleted.
 )
 
-:: Создаем папку AutoRecord и распаковываем архив AutoRecord.zip
-powershell -command "Expand-Archive -Path .\AutoRecord.zip -DestinationPath '%APPDATA_PATH%'"
+:: Загружаем последний релиз AutoRecord.zip с GitHub
+echo Downloading latest release of AutoRecord...
+curl -L -o "%ZIP_FILE%" "%DOWNLOAD_URL%"
+
+:: Проверяем успешность загрузки файла
+if not exist "%ZIP_FILE%" (
+    echo Failed to download AutoRecord.zip. Exiting.
+    pause
+    exit /b 1
+)
+
+:: Распаковываем архив AutoRecord.zip
+powershell -command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%APPDATA_PATH%'"
 echo Done
 
 :: Создаем ярлык на рабочем столе
