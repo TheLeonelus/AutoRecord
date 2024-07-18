@@ -2,7 +2,8 @@ SendMiddlewareMessage(StringToSend, code)
 ; This function sends the specified string to the specified window and returns the reply.
 ; The reply is 1 if the target window processed the message, or 0 if it ignored it.
 {
-	TargetScriptTitle := "AutoRecord.ahk - AutoHotkey " A_AhkVersion " ahk_class AutoHotkey"
+    TargetScriptTitle := "AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey"
+    OutputDebug TargetScriptTitle
     CopyDataStruct := Buffer(3*A_PtrSize)  ; Set up the structure's memory area.
     ; First set the structure's cbData member to the size of the string, including its zero terminator:
     SizeInBytes := (StrLen(StringToSend) + 1) * 2
