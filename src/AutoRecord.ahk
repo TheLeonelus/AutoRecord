@@ -2,14 +2,19 @@
 Persistent
 
 if !A_IsCompiled {
-  SetWorkingDir(A_AppData "\AutoRecord\src")
-  MsgBox(A_AhkVersion)
+  SetWorkingDir(A_AppData "\AutoRecord")
+  MsgBox("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey")
   MsgBox(A_ScriptFullPath)
 }
 A_ScriptName := "AutoRecord V1.1"
+
+
+shared_obj := CriticalObject({ check_delay: 500, hotkey_delay: 100})
+shared_msg_obj := CriticalObject({last_msg: ""})
+lpCS := CriticalObject(shared_msg_obj, 2)
+
 try {
-  ; объект для регулировки таймингов, прерываний и доступа к функции записи
-   shared_obj := CriticalObject({ check_delay: 500, hotkey_delay: 100, last_msg: "" })
+  ; object to store shared variable between threads
   ; looking for obs, if not found, trying to start it
   if !ProcessExist("obs64.exe") {
     try {
@@ -29,51 +34,16 @@ try {
     OutputDebug("websocket is ded`n")
     Throw e
   }
-  ; handle responses from server
-  handleMessage(self, data) {
-    logToFile(Data '`n')
-    shared_obj.last_msg := jxon_load(&Data)
-    OutputDebug "opCode: " shared_obj.last_msg["op"] "`n"
-    switch shared_obj.last_msg["op"]
-    {
-      case 0:
-        ; hello
-        response := Format("
-        (
-            {
-            "d": {
-            "rpcVersion": {1:s}
-            },
-            "op": 1
-            }
-            )", shared_obj.last_msg["d"]["rpcVersion"])
-        self.sendText(response)
-        logToFile(response)
-
-      case 2:
-        ; identify
-        OutputDebug "identified`n"
-      Default:
-        logToFile(Jxon_Dump(shared_obj.last_msg))
-    }
-  }
-
-  ; Создаём отдельный поток для мониторинга Telegram
   script := "
   (
     shared_obj := CriticalObject(a_args[1]) ; get CriticalObject from pointer
+    shared_msg_obj := CriticalObject(a_args[2])
     lpCS := CriticalObject(shared_obj,2) ; get CriticalSection
-    #Include %A_appdata%\AutoRecord\src\Lib\Telegram.ahk
     )"
-  tg_td := ThreadObj(script, ObjPtr(shared_obj) "")
-  ; Создаём отдельный поток для мониторинга Whatsapp
-  script := "
-  (
-    shared_obj := CriticalObject(a_args[1]) ; get CriticalObject from pointer
-    lpCS := CriticalObject(shared_obj,2) ; get CriticalSection
-    #Include %A_appdata%\AutoRecord\src\Lib\Whatsapp.ahk
-  )"
-  wa_td := ThreadObj(script, ObjPtr(shared_obj) "") ; Here is pointer to CO
+  ; Thread to look for Telegram
+  tg_td := ThreadObj(script "`n#Include <Telegram>", ObjPtr(shared_obj) "" " " ObjPtr(shared_msg_obj) "")
+  ; Thread to look for Whatsapp
+  wa_td := ThreadObj(script "`n#Include <Whatsapp>", ObjPtr(shared_obj) "" " " ObjPtr(shared_msg_obj) "")
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -85,14 +55,46 @@ catch as e {
 
 sendOBSCommand(wParam, lParam, msg, hwnd)
 {
-    response := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
-    logToFile(response)
-    obs_connection.sendText(response)
-    return 
+  response := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
+  logToFile("Got msg to send: " response)
+  obs_connection.sendText(response)
+  return true
+}
+
+; handle responses from server
+handleMessage(self, data) {
+  ; write response to logs and shared object
+  logToFile("Received: " data '`n')
+  TryEnterCriticalSection(lpCS)
+  shared_msg_obj.last_msg := data
+  LeaveCriticalSection(lpCS)
+  parsed_message := JSON.parse(data)
+  OutputDebug "opCode: " parsed_message["op"] "`n"
+  switch parsed_message["op"]
+  {
+    case 0:
+      ; hello
+      response := Format("
+        (
+            {
+            "d": {
+            "rpcVersion": {1:s}
+            },
+            "op": 1
+            }
+            )", parsed_message["d"]["rpcVersion"])
+      self.sendText(response)
+      logToFile(response)
+
+    case 2:
+      ; identify
+      OutputDebug "identified`n"
+    Default:
+      OutputDebug ""
+  }
 }
 
 #Include ExternalLib\WebSocket.ahk
-#Include ExternalLib\JXON.ahk
 #Include <logError>
 #Include <logToFile>
 #Include <SendNotification>
