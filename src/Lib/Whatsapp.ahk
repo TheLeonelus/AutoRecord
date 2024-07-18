@@ -20,7 +20,7 @@ Loop
     Sleep shared_obj.check_delay
 }
 
-#Include %A_Appdata%\AutoRecord\src\Lib\logToFile.ahk
-#Include %A_Appdata%\AutoRecord\src\Lib\logError.ahk
-#Include %A_Appdata%\AutoRecord\src\Lib\handleRecording.ahk
-#Include %A_Appdata%\AutoRecord\src\Lib\SendMiddlewareMessage.ahk  
+#Include <logToFile>
+#Include <logError>
+#Include <handleRecording>
+#Include <SendMiddlewareMessage>  
