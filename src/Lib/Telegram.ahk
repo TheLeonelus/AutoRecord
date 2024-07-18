@@ -6,9 +6,8 @@ telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 telegram_pid := WinGetPID("ahk_exe Telegram.exe")
 telegram_window_list := []
 /*
-Здесь объявляются массивы строк для разных языков
-Для добавления нового языка необходимо добавить новый язык с заголовками окон выбора файла, просмотра медиа и выбора изображения на аватарку
-После чего добавить его в двумерный массив languages_array
+Here language arrays are defined with their respective title strings
+To add new one we need to define it and add into languages_array afterwards
 */
 en_array := ["Media viewer", "Choose Files", "English"]
 ru_array := ["Просмотр медиа", "Выбор файлов", "Russian"]
@@ -23,14 +22,13 @@ chosen_language := []
 Loop
 {
     try {
-        ; Проверяем на наличие процесса Telegram
+        ; Checking if Telegram is still opened
         if WinExist("ahk_id " telegram_id) != 0 {
-            ; получаем список окон Telegram
+            ; Retrieve window list
             telegram_window_list := WinGetList("ahk_exe Telegram.exe")
-            ; Если окон больше одного, то перебираем их на наличие окна со звонком
-            ; Если окон больше одного, то перебираем их на наличие окна со звонком
             len := telegram_window_list.Length
             if len > 1 {
+                ; Filtering Telegram windows
                 loop len {
                     index := len - A_Index + 1
                     window_class := WinGetClass("ahk_id " telegram_window_list[index])
@@ -63,7 +61,6 @@ Loop
                                 handleRecording(window, title)
                         }
                     }
-                break_languageDefining:
             }
             ; Waiting for Telegram if it was closed
             } else {
