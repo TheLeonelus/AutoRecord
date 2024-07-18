@@ -35,7 +35,12 @@
 
 ; originally posted by user coco on AutoHotkey.com
 ; https://github.com/cocobelgica/AutoHotkey-JSON
-
+/**
+ * convert json back to object
+ * @param src - properly formatted JSON string, must be passed as a VarRef with & character. This will ensure better performance and memory saving with massive input strings.
+ * @param args - 
+ * @returns {Object} - JSON Object
+ */
 Jxon_Load(&src, args*) {
 	key := "", is_key := false
 	stack := [ tree := [] ]
@@ -144,7 +149,13 @@ Jxon_Load(&src, args*) {
 	
 	return tree[1]
 }
-
+/**
+ * 
+ * @param obj - JSON object to be serialized
+ * @param {String} indent - indent is in spaces. A value of 1 or more in this param will insert a line break at every element
+ * @param {Integer} lvl 
+ * @returns {String} - serialized JSON text
+ */
 Jxon_Dump(obj, indent:="", lvl:=1) {
 	if IsObject(obj) {
         If !(obj is Array || obj is Map || obj is String || obj is Number)
