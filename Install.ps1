@@ -50,7 +50,7 @@ $shortcut.Save()
 # Создаем ярлык ОБС в папке автозагрузки и назначаем рабочую папку
 $shortcut = $ws.CreateShortcut("$STARTUP_PATH\obs64.lnk")
 $shortcut.TargetPath = ("C:\Program Files\obs-studio\bin\64bit\obs64.exe")
-$shortcut.WorkingDirectory = ("C:\Program Files\obs-studio\bin\64bit\obs64.exe")
+$shortcut.WorkingDirectory = ("C:\Program Files\obs-studio\bin\64bit")
 $shortcut.Save()
 
 Read-Host -Prompt "Press Enter to exit"
