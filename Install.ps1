@@ -47,8 +47,8 @@ $shortcut.Save()
 $shortcut = $ws.CreateShortcut("$STARTUP_PATH\AutoRecord.lnk")
 $shortcut.TargetPath = $AUTO_RECORD_EXE
 $shortcut.Save()
-$shortcut = $ws.CreateShortcut("$STARTUP_PATH\obs64.lnk)
-$shortcut.TargetPath = "C:\Program Files\obs-studio\bin\64bit\obs64.exe"
+$shortcut = $ws.CreateShortcut("$STARTUP_PATH\obs64.lnk")
+$shortcut.TargetPath = ("C:\Program Files\obs-studio\bin\64bit\obs64.exe")
 $shortcut.Save()
 
 Read-Host -Prompt "Press Enter to exit"
