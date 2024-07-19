@@ -43,9 +43,12 @@ $shortcut = $ws.CreateShortcut("$DESKTOP_PATH\AutoRecord.lnk")
 $shortcut.TargetPath = $AUTO_RECORD_EXE
 $shortcut.Save()
 
-# Создаем ярлык в папке автозагрузки
+# Создаем ярлык AutoRecord и OBS в папке автозагрузки
 $shortcut = $ws.CreateShortcut("$STARTUP_PATH\AutoRecord.lnk")
 $shortcut.TargetPath = $AUTO_RECORD_EXE
+$shortcut.Save()
+$shortcut = $ws.CreateShortcut("$STARTUP_PATH\obs64.lnk)
+$shortcut.TargetPath = "C:\Program Files\obs-studio\bin\64bit\obs64.exe"
 $shortcut.Save()
 
 Read-Host -Prompt "Press Enter to exit"
