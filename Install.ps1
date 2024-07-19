@@ -5,7 +5,7 @@ $AUTO_RECORD_EXE = "$AUTO_RECORD_PATH\AutoRecord.exe"
 $DESKTOP_PATH = [System.Environment]::GetFolderPath('Desktop')
 $STARTUP_PATH = "$APPDATA_PATH\Microsoft\Windows\Start Menu\Programs\Startup"
 $DOWNLOAD_URL = "https://github.com/theleonelus/autorecord/releases/latest/download/autorecord.zip"
-$ZIP_FILE = Join-Path $PSScriptRoot "AutoRecord.zip"  # полный путь к текущему скрипту
+$ZIP_FILE = "$env:TEMP"  # полный путь к текущему скрипту
 
 # Завершаем процесс AutoRecord.exe, если он запущен
 $process = Get-Process -Name "AutoRecord" -ErrorAction SilentlyContinue
