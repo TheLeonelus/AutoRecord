@@ -38,3 +38,4 @@ This software was created thanks to:
 - [Ahkdll-V2](https://github.com/HotKeyIt/ahkdll-v2-release/)
 - [Ahk2exe](https://github.com/AutoHotkey/Ahk2Exe)
 - Icon created by [bqlqn - Flaticon](https://www.flaticon.com/free-icon/radio-waves_1340130)
+- [JXON_ahk2](https://github.com/TheArkive/JXON_ahk2)
