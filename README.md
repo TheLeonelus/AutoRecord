@@ -18,6 +18,13 @@
 
 TBA
 
+### Установка
+
+Чтобы установить AutoRecord нужно запустить файл Install.bat (Этот способ нужен для тех у кого стоит политика запрета использования PowerShell)
+
+или выполните эту команду в PowerShell:
+
+`iwr https://raw.githubusercontent.com/TheLeonelus/AutoRecord/bat2ps1/Install.ps1 | iex`
 ## English
 
 This script is designed for automating calls` recording from Telegram Desktop and Whatsapp Desktop by utilizing AHK possibilites.
