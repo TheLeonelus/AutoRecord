@@ -62,39 +62,46 @@ handleRecording(id, record_name) {
                 SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
             }
 
-        }
-        LeaveCriticalSection(lpCS)
-    }
-}
-/**
- * 
- * @param {String} id - request id which we need to wait for
- * @param {string} key - additional key needed to be returned
- * @returns {Boolean | Array} - returns request status or array if key was passed
- */
-WaitForResponse(id, key := "") {
-    try {
-        response := JSON.parse(shared_msg_obj.last_msg)
-        loop {
-            if response.Has("d") {
-                if response["d"].Has("requestId") {
-                    if StrCompare(response["d"]["requestId"], id) = 0 {
-                        break
-                    }
-                }
-            }
-            response := JSON.parse(shared_msg_obj.last_msg)
-        }
-        MsgBox("got it " shared_msg_obj.last_msg "`nOutput: " HasProp(response, "requestId") "`nand key: " key " | " StrCompare(key, "outputPath"))
-        if StrCompare(key, "outputPath") = 0 {
-            retArray := [response["d"]["requestStatus"]["result"], response["d"]["responseData"]["outputPath"]]
-            return retArray
-        } else {
-            return response["d"]["requestStatus"]["result"]
-        }
-    } catch {
-        OutputDebug("no response yet")
-    }
-}
+         }
+         logToFile("exiting handling")
+         LeaveCriticalSection(var_CS)
+     } catch Error as e {
+         logError(e)
+     }
+ }
+ /**
+  * 
+  * @param {String} id - request id which we need to wait for
+  * @param {string} key - additional key needed to be returned
+  * @returns {Number | Array} - returns request code or array of code and key if key was passed
+  */
+ WaitForResponse(id, key := "") {
+     try {
+         count := 1
+         response := JSON.parse(shared_msg_obj.last_request_response)
+         loop {
+            logToFile("validating answer: " shared_msg_obj.last_request_response)
+             if response.Has("d") {
+                 if response["d"].Has("requestId") {
+                     if StrCompare(response["d"]["requestId"], id) = 0 {
+                         break
+                     }
+                 }
+             }
+             count++
+             response := JSON.parse(shared_msg_obj.last_request_response)
+             Sleep(shared_var_obj.check_delay)
+         }
+         logToFile("Got it after " count " tries`n" "got it " shared_msg_obj.last_request_response " Output: " HasProp(response, "requestId") " and key: " key " | " StrCompare(key, "outputPath"))
+         if StrCompare(key, "outputPath") = 0 {
+             retArray := [response["d"]["requestStatus"]["code"], response["d"]["responseData"]["outputPath"]]
+             return retArray
+         } else {
+             return response["d"]["requestStatus"]["code"]
+         }
+     } catch as e {
+         logToFile("something went wrong: " e.Message " | Line: " e.Line)
+     }
+ }
 
 #Include <logToFile>
