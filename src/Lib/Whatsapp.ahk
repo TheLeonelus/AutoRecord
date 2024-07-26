@@ -17,7 +17,7 @@ Loop
         logError(e)
     }
     ; delay between new loop
-    Sleep shared_obj.check_delay
+    Sleep shared_var_obj.check_delay
 }
 
 #Include <logToFile>
