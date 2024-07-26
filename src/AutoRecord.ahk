@@ -8,10 +8,13 @@ if !A_IsCompiled {
 }
 A_ScriptName := "AutoRecord V1.1"
 
+shared_var_obj := CriticalObject({ check_delay: 500 })
+shared_msg_obj := CriticalObject({ last_message: "", last_request_response: "" })
+shared_log_obj := CriticalObject({ info_log_file: FileOpen(A_AppData "\AutoRecord\info.log", "a") })
+msg_CS := CriticalObject(shared_msg_obj, 2)
 
-shared_obj := CriticalObject({ check_delay: 500, hotkey_delay: 100})
-shared_msg_obj := CriticalObject({last_msg: ""})
-lpCS := CriticalObject(shared_msg_obj, 2)
+
+; defining criticalobject variables for managing access to operations between threads
 
 try {
   ; object to store shared variable between threads
@@ -27,23 +30,25 @@ try {
   }
   try {
     obs_connection := WebSocket("ws://127.0.0.1:4455/", {
-      message: (self, data) => handleMessage(self, data),
+      message: (self, data) => manageOBSMessages(self, data),
       close: (self, status, reason) => logToFile(status ' ' reason '`n'),
     })
   } catch as e {
     OutputDebug("websocket is ded`n")
-    Throw e
   }
   script := "
   (
-    shared_obj := CriticalObject(a_args[1]) ; get CriticalObject from pointer
+    ; get CriticalObjects from pointer
+    shared_var_obj := CriticalObject(a_args[1])
     shared_msg_obj := CriticalObject(a_args[2])
-    lpCS := CriticalObject(shared_obj,2) ; get CriticalSection
+    shared_log_obj := CriticalObject(a_args[3])
+    ; get CriticalSections
+    var_CS := CriticalObject(shared_var_obj,2)
     )"
   ; Thread to look for Telegram
-  tg_td := ThreadObj(script "`n#Include <Telegram>", ObjPtr(shared_obj) "" " " ObjPtr(shared_msg_obj) "")
+  tg_td := ThreadObj(script "`n#Include <Telegram>", ObjPtr(shared_var_obj) " " ObjPtr(shared_msg_obj) " " ObjPtr(shared_log_obj))
   ; Thread to look for Whatsapp
-  wa_td := ThreadObj(script "`n#Include <Whatsapp>", ObjPtr(shared_obj) "" " " ObjPtr(shared_msg_obj) "")
+  wa_td := ThreadObj(script "`n#Include <Whatsapp>", ObjPtr(shared_var_obj) " " ObjPtr(shared_msg_obj) " " ObjPtr(shared_log_obj))
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -61,13 +66,14 @@ sendOBSCommand(wParam, lParam, msg, hwnd)
   return true
 }
 
+
 ; handle responses from server
-handleMessage(self, data) {
+manageOBSMessages(self, data) {
   ; write response to logs and shared object
   logToFile("Received: " data '`n')
-  TryEnterCriticalSection(lpCS)
-  shared_msg_obj.last_msg := data
-  LeaveCriticalSection(lpCS)
+  TryEnterCriticalSection(msg_CS)
+  shared_msg_obj.last_message := data
+  LeaveCriticalSection(msg_CS)
   parsed_message := JSON.parse(data)
   OutputDebug "opCode: " parsed_message["op"] "`n"
   switch parsed_message["op"]
@@ -89,8 +95,14 @@ handleMessage(self, data) {
     case 2:
       ; identify
       OutputDebug "identified`n"
+    case 7:
+    {
+      TryEnterCriticalSection(msg_CS)
+      shared_msg_obj.last_request_response := data
+      LeaveCriticalSection(msg_CS)
+    }
     Default:
-      OutputDebug ""
+      OutputDebug data
   }
 }
 
