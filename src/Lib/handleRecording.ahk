@@ -1,7 +1,13 @@
-handleRecording(id, record_name) {
-    if TryEnterCriticalSection(lpCS) {
-        requestId := "profile_args_set"
-        request := Format("
+ /**
+  * 
+  * @param {Number} id - window's call 
+  * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
+  */
+ handleRecording(id, record_name := "") {
+     try {
+         TryEnterCriticalSection(var_CS)
+         requestId := "profile_args_set"
+         request := Format("
         (
         {
             "op": 6,
@@ -16,10 +22,10 @@ handleRecording(id, record_name) {
             }
         }
         )", requestId, record_name)
-        SendMiddlewareMessage(request, 0xFF02)
-        if waitForResponse(requestId) {
-            requestId := "record_start"
-            request := Format("
+         SendMiddlewareMessage(request, 0xFF02)
+         if waitForResponse(requestId) = 100 {
+             requestId := "record_start"
+             request := Format("
             (
             {
             "op": 6,
@@ -31,19 +37,33 @@ handleRecording(id, record_name) {
             }
             )", requestId)
             SendMiddlewareMessage(request, 0xFF02)
-            if waitForResponse(requestId) {
-                SendMiddlewareMessage("Recording started.", 0xFF01)
-            } else {
-                SendMiddlewareMessage("Recording couldn't be started. `nPlease Try again or report problem.", 0xFF01)
-                return
-            }
-            ; wait until window with call id is closed
-            While WinExist("ahk_id " id) != 0 {
-                WinWaitClose("ahk_id " id, 5000)
-            }
-            ; stop recording
-            requestId := "record_stop"
-            request := Format("
+            response_status := waitForResponse(requestId)
+            logToFile("response IS : " response_status)
+             switch response_status
+             {
+                 case 100:
+                 {
+                     SendMiddlewareMessage("Recording started.", 0xFF01)
+                 }
+                 case 500:
+                 {
+                     SendMiddlewareMessage("Recording is already running.", 0xFF01)
+                     return 0
+                 }
+                 default:
+                 {
+                     SendMiddlewareMessage("Recording couldn't be started. `nPlease Try again or report problem.", 0xFF01)
+                     return 0
+                 }
+             }
+             logToFile("Passed switch statement")
+             ; wait until window with call id is closed
+             While WinExist("ahk_id " id) != 0 {
+                 WinWaitClose("ahk_id " id, shared_var_obj.check_delay)
+             }
+             ; stop recording
+             requestId := "record_stop"
+             request := Format("
             (
             {
                 "op": 6,
@@ -54,13 +74,13 @@ handleRecording(id, record_name) {
                 }
             }
             )", requestId)
-            SendMiddlewareMessage(request, 0xFF02)
-            retArray := waitForResponse(requestId, "outputPath")
-            if retArray[1] {
-                SendMiddlewareMessage("Recording was finished. `n" retArray[2] " was saved.", 0xFF01)
-            } else {
-                SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
-            }
+             SendMiddlewareMessage(request, 0xFF02)
+             retArray := waitForResponse(requestId, "outputPath")
+             if retArray[1] {
+                 SendMiddlewareMessage("Recording was finished. `n" retArray[2] " was saved.", 0xFF01)
+             } else {
+                 SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
+             }
 
          }
          logToFile("exiting handling")
@@ -104,4 +124,4 @@ handleRecording(id, record_name) {
      }
  }
 
-#Include <logToFile>
+ #Include <logToFile>
