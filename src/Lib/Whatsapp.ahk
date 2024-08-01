@@ -14,7 +14,7 @@ Loop
         handleRecording(window_id, "Whatsapp")
     }
     catch as e {
-        logError(e)
+        logToFile(e, 3)
     }
     ; delay between new loop
     Sleep shared_var_obj.check_delay

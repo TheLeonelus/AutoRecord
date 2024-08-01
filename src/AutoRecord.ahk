@@ -53,10 +53,6 @@ try {
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
   OnMessage(0xFF02, sendOBSCommand)
-}
-catch as e {
-  logError(e)
-}
 
 sendOBSCommand(wParam, lParam, msg, hwnd)
 {
@@ -124,7 +120,7 @@ manageOBSMessages(self, data) {
 }
 
 #Include ExternalLib\WebSocket.ahk
-#Include <logError>
+
 #Include <logToFile>
 #Include <SendNotification>
 #Include <HandleMiddlewareMessage>

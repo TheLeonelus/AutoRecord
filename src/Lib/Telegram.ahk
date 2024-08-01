@@ -69,13 +69,12 @@ Loop
         }
     }
     catch as e {
-            logError(e)
-        }
+        logToFile(e, 3)
+    }
     ; Delay before new loop
         Sleep shared_var_obj.check_delay
     }
 
 #Include <logToFile>
-#Include <logError>
 #Include <handleRecording>
 #Include <SendMiddlewareMessage>
