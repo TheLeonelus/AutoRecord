@@ -17,7 +17,7 @@ Loop
         logToFile(e, 3)
     }
     ; delay between new loop
-    Sleep shared_var_obj.check_delay
+    Sleep control_CO.check_delay
 }
 
 #Include <logToFile>

@@ -1,4 +1,4 @@
-#NoTrayIcon
+﻿#NoTrayIcon
 
 SendMiddlewareMessage("Telegram module initialized.", 0xFF01)
 
@@ -72,8 +72,8 @@ Loop
         logToFile(e, 3)
     }
     ; Delay before new loop
-        Sleep shared_var_obj.check_delay
-    }
+    Sleep control_CO.check_delay
+}
 
 #Include <logToFile>
 #Include <handleRecording>
