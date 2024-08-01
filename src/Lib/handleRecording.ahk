@@ -101,8 +101,8 @@
              return response["d"]["requestStatus"]["code"]
          }
      } catch as e {
-         logToFile("something went wrong: " e.Message " | Line: " e.Line)
+         logToFile("something went wrong: " e.Message " | Line: " e.Line, 3)
      }
  }
 
- #Include <logToFile>
+#Include <logToFile>
