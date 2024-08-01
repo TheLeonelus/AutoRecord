@@ -95,6 +95,23 @@ manageOBSMessages(self, data) {
     case 2:
       ; identify
       OutputDebug "identified`n"
+        OutputDebug "Setting record output name"
+        request := "
+        (
+        {
+            "op": 6,
+            "d": {
+                "requestType": "SetProfileParameter",
+                "requestId": "profile_args_set",
+                "requestData": {
+                    "parameterCategory": "Output",
+                    "parameterName": "FilenameFormatting",
+                    "parameterValue": "%DD-%MM %hh-%mm-%ss"
+                }
+            }
+        }
+        )"
+        obs_connection.sendText(request)
     case 7:
     {
       TryEnterCriticalSection(msg_CS)
