@@ -1,3 +1,10 @@
+/**
+ * 
+ * @param {String} StringToSend -  string to pass with code
+ * @param {Number} code - HEX machine code which will be distinguished by main thread
+ * @returns {Integer} - return value (0 or 1) from main thread
+ * <br> Implementation is taken from Autohotkey.com
+ */
 SendMiddlewareMessage(StringToSend, code)
 ; This function sends the specified string to the specified window and returns the reply.
 ; The reply is 1 if the target window processed the message, or 0 if it ignored it.
