@@ -1,8 +1,8 @@
  /**
-  * 
-  * @param {Number} id - window's call 
-  * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
-  */
+ * 
+ * @param {Number} id - window's call 
+ * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
+ */
  handleRecording(id, record_name := "") {
      try {
          TryEnterCriticalSection(var_CS)
@@ -90,11 +90,11 @@
      }
  }
  /**
-  * 
-  * @param {String} id - request id which we need to wait for
-  * @param {string} key - additional key needed to be returned
-  * @returns {Number | Array} - returns request code or array of code and key if key was passed
-  */
+ * 
+ * @param {String} id - request id which we need to wait for
+ * @param {string} key - additional key needed to be returned
+ * @returns {Number | Array} - returns request code or array of code and key if key was passed
+ */
  WaitForResponse(id, key := "") {
      try {
          count := 1
