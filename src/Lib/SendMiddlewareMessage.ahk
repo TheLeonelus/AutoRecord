@@ -8,7 +8,7 @@
 SendMiddlewareMessage(StringToSend, code)
 {
     TargetScriptTitle := "AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey"
-    OutputDebug TargetScriptTitle
+    OutputDebug TargetScriptTitle "`n"
     CopyDataStruct := Buffer(3 * A_PtrSize)  ; Set up the structure's memory area.
     ; First set the structure's cbData member to the size of the string, including its zero terminator:
     SizeInBytes := (StrLen(StringToSend) + 1) * 2

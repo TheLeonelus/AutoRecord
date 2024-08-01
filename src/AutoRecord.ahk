@@ -3,18 +3,22 @@ Persistent
 
 if A_IsCompiled = 0 {
   SetWorkingDir(A_AppData "\AutoRecord")
-  OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey")
-  OutputDebug("A_IsCompiled = " A_IsCompiled)
+  OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey" "`n")
+  OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
 }
 A_ScriptName := "AutoRecord V1.1"
 
-; object to control access to CS
-control_CO := { check_delay: 500 }
-; object to write and share messages from OBS
-shared_msg_obj := { last_message: "{}", last_request_response: "{}" }
-; object to share log's FileObject
-shared_log_obj := { info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a") }
 
+/**
+ * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
+ * @property {String} last_message
+ * @property {String} last_request_response
+ * @property {Object} info_log
+ * <br> DONT DESTRUCT OBJECT
+ * <br> Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
+ * <br> If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
+ */
+shared_obj := {check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a")}
 try {
 
   ; looking for obs, if not found, trying to start it
@@ -22,13 +26,14 @@ try {
     try {
       Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
       logToFile("OBS wasn't found, trying to start it up")
+      WinWait("ahk_exe obs64.exe",,10000)
     }
     catch {
       MsgBox("OBS wasn`t found. Please try to start it up manually.", , 0x2)
     }
   }
   try {
-    obs_connection := WebSocket("ws://127.0.0.1:4455/", {
+    Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
       message: (self, data) => manageOBSMessages(self, data),
       close: (self, status, reason) => logToFile(status ' ' reason '`n', 2),
     })
@@ -37,15 +42,12 @@ try {
   }
   script := "
   (
-    Alias(control_CO:={}, ahkGetVar('control_CO', 1, A_MainThreadID))
-    Alias(shared_msg_obj:={}, ahkGetVar('shared_msg_obj', 1, A_MainThreadID))
-    Alias(shared_log_obj:={}, ahkGetVar('shared_log_obj', 1, A_MainThreadID))
+  Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
   ; Thread to look for Telegram
   tg_td := Worker(script "`n#Include <Telegram>")
   ; Thread to look for Whatsapp
   wa_td := Worker(script "`n#Include <Whatsapp>")
-
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -59,14 +61,12 @@ try {
     return true
   }
 
-
   ; handle responses from server
   manageOBSMessages(self, data) {
-    ; write response to logs and shared object
+    ; write response to logs and shared_object
     logToFile("Received: " data '`n')
-    shared_msg_obj.last_message := data
+    shared_obj.last_message := data
     parsed_message := JSON.parse(data)
-    logToFile("opCode: " parsed_message["op"] "`n")
     switch parsed_message["op"]
     {
       case 0:
@@ -81,12 +81,13 @@ try {
             }
             )", parsed_message["d"]["rpcVersion"])
         self.sendText(response)
-        logToFile(response)
+        logToFile("Sent: " response)
 
       case 2:
         ; identify
         OutputDebug "identified`n"
-        OutputDebug "Setting record output name"
+        Sleep shared_obj.check_delay
+        OutputDebug "Setting record output name`n"
         request := "
         (
         {
@@ -105,10 +106,10 @@ try {
         obs_connection.sendText(request)
       case 7:
       {
-        shared_msg_obj.last_request_response := data
+        shared_obj.last_request_response := data
       }
       Default:
-        OutputDebug "received not handled message"
+        OutputDebug "received not handled message`n"
     }
   }
 

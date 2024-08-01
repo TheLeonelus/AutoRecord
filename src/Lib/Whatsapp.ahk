@@ -1,5 +1,5 @@
 #NoTrayIcon
-Sleep(1000)
+Sleep(shared_obj.check_delay)
 SendMiddlewareMessage("Whatsapp module initialized.", 0xFF01)
 
 GroupAdd "window_call_titles", "Voice call ‎- WhatsApp"
@@ -17,7 +17,7 @@ Loop
         logToFile(e, 3)
     }
     ; delay between new loop
-    Sleep control_CO.check_delay
+    Sleep shared_obj.check_delay
 }
 
 #Include <logToFile>
