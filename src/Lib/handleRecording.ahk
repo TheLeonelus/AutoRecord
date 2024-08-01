@@ -4,7 +4,7 @@
  * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
  */
 handleRecording(id, record_name := "") {
-    logToFile("Starting recording with: " record_name " | " id)
+    logToFile("Starting recording with: " record_name " | " id, 2)
     request_id := "record_start"
     request := Format("
     (
@@ -40,7 +40,7 @@ handleRecording(id, record_name := "") {
     logToFile("Passed switch statement")
     ; wait until window with call id is closed
     While WinExist("ahk_id " id) != 0 {
-        WinWaitClose("ahk_id " id, control_CO.check_delay)
+        WinWaitClose("ahk_id " id, shared_obj.check_delay)
     }
     ; stop recording
     request_id := "record_stop"
@@ -81,23 +81,24 @@ handleRecording(id, record_name := "") {
     }
     else
         SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
-    logToFile("exiting handling")
+    logToFile("exiting handleRecording")
 }
 
 /**
  * 
  * @param {String} id - request id which we need to wait for
  * @param {string} key - additional key needed to be returned
- * @returns {Number | Array} - returns request code or array of code and key if key was passed
+ * @returns {Number} - request status code, if `key` was omitted
+ * @returns {Array} -array of status `code` and `key` if last was passed
  */
 WaitForResponse(id, key := "") {
     try {
         count := 1
-        response := JSON.parse(shared_msg_obj.last_request_response)
+        response := JSON.parse(shared_obj.last_request_response)
         isFound := false
-        while isFound {
-            logToFile("validating answer: " shared_msg_obj.last_request_response)
+        while !isFound {
             if response.Has("d") {
+                logToFile("validating answer")
                 if response["d"].Has("requestId") {
                     if StrCompare(response["d"]["requestId"], id) = 0 {
                         isFound := true
@@ -106,10 +107,10 @@ WaitForResponse(id, key := "") {
                 }
             }
             count++
-            response := JSON.parse(shared_msg_obj.last_request_response)
-            Sleep(control_CO.check_delay)
+            response := JSON.parse(shared_obj.last_request_response)
+            Sleep(shared_obj.check_delay)
         }
-        logToFile("Got it after " count " tries | id: " id " and key: " key " | " StrCompare(key, "outputPath") "|" StrCompare(response["d"]["requestId"], id) "`nFound: " shared_msg_obj.last_request_response)
+        logToFile("Got it after " count " tries | id: " id " | key: " key " | `nFound: " shared_obj.last_request_response)
         if StrCompare(key, "outputPath") = 0 {
             retArray := [response["d"]["requestStatus"]["code"], response["d"]["responseData"]["outputPath"]]
             return retArray
@@ -117,7 +118,7 @@ WaitForResponse(id, key := "") {
             return response["d"]["requestStatus"]["code"]
         }
     } catch as e {
-        logToFile("something went wrong: " e.Message " | Line: " e.Line, 3)
+        logToFile(e, 3)
     }
 }
 
