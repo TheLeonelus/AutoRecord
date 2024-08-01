@@ -21,6 +21,5 @@ Loop
 }
 
 #Include <logToFile>
-#Include <logError>
 #Include <handleRecording>
-#Include <SendMiddlewareMessage>  
+#Include <SendMiddlewareMessage>

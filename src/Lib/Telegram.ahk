@@ -1,4 +1,4 @@
-﻿#NoTrayIcon
+#NoTrayIcon
 
 SendMiddlewareMessage("Telegram module initialized.", 0xFF01)
 
@@ -9,10 +9,10 @@ telegram_window_list := []
 Here language arrays are defined with their respective title strings
 To add new one we need to define it and add into languages_array afterwards
 */
-en_array := ["Media viewer", "Choose Files", "English"]
-ru_array := ["Просмотр медиа", "Выбор файлов", "Russian"]
-port_array := ["Visualizador de Mídia", "Escolher Arquivos", "Portuguese"]
-french_array := ["Lecteur multimédia", "Choisir des fichiers", "French"]
+en_array := ["Media viewer", "English"]
+ru_array := ["Просмотр медиа", "Russian"]
+port_array := ["Visualizador de Mídia", "Portuguese"]
+french_array := ["Lecteur multimédia", "French"]
 ; korean_array := ["미디어 뷰어", "파일 선택", "Korean"]
 ; italian_array := ["", "", "Italian"]
 languages_array := [en_array, ru_array, port_array, french_array]
@@ -32,7 +32,6 @@ Loop
                 loop len {
                     index := len - A_Index + 1
                     window_class := WinGetClass("ahk_id " telegram_window_list[index])
-                    OutputDebug StrCompare(window_class, "Qt51513QWindowIcon", false)
                     ; remove windows with wrong class/id from array
                     if (telegram_window_list[index] = telegram_id || StrCompare(window_class, "Qt51513QWindowIcon", false)) {
                         telegram_window_list.RemoveAt(index)
@@ -40,39 +39,39 @@ Loop
                 }
                 ; Label for exiting outer Loop
                 languageDefining:
-                    for window in telegram_window_list {
-                        title := WinGetTitle("ahk_id" window)
-                        if chosen_language.Length = 0 {
-                            ; If language is unknown - try to define it, then start record
-                            for language in languages_array {
-                                for title_string in language {
-                                    if InStr(title, title_string) != 0 {
-                                        chosen_language := language
-                                        SendMiddlewareMessage("Telegram`'s language is defined as " chosen_language[3], 0xFF01)
-                                        break languageDefining
-                                    }
+                for window in telegram_window_list {
+                    title := WinGetTitle("ahk_id" window)
+                    if chosen_language.Length = 0 {
+                        ; If language is unknown - try to define it, then start record
+                        for language in languages_array {
+                            for title_string in language {
+                                if InStr(title, title_string) != 0 {
+                                    chosen_language := language
+                                    SendMiddlewareMessage("Telegram`'s language is defined as " chosen_language[2], 0xFF01)
+                                    break languageDefining
                                 }
                             }
-                            if RegExMatch(title,"^((?>(?!TelegramDesktop).)*)$")
-                                handleRecording(window, title)
-                        } else {
-                            ; If language is defined - do simpler validation
-                            if RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!" chosen_language[2] ")(?!TelegramDesktop).)*)$")
-                                handleRecording(window, title)
                         }
+                        if RegExMatch(title, "^((?>(?!TelegramDesktop).)*)$")
+                            handleRecording(window, title)
+                    } else {
+                        ; If language is defined - do simpler validation
+                        if RegExMatch(title, "^((?>(?!" chosen_language[1] ")(?!TelegramDesktop).)*)$")
+                            handleRecording(window, title)
                     }
+                }
             }
-            ; Waiting for Telegram if it was closed
-            } else {
-                chosen_language := []
-                telegram_id := WinWait("ahk_exe Telegram.exe")
-                telegram_pid := WinGetPID("ahk_exe Telegram.exe")
-            }
+            ; Waiting for Telegram to be opened again
+        } else {
+            chosen_language := []
+            telegram_id := WinWait("ahk_exe Telegram.exe")
+            telegram_pid := WinGetPID("ahk_exe Telegram.exe")
         }
-        catch as e {
+    }
+    catch as e {
             logError(e)
         }
-        ; Delay before new loop
+    ; Delay before new loop
         Sleep shared_var_obj.check_delay
     }
 
