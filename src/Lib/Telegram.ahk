@@ -1,5 +1,4 @@
 ﻿#NoTrayIcon
-
 SendMiddlewareMessage("Telegram module initialized.", 0xFF01)
 
 telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
@@ -18,7 +17,6 @@ french_array := ["Lecteur multimédia", "French"]
 languages_array := [en_array, ru_array, port_array, french_array]
 ; keeps single array after language defining
 chosen_language := []
-
 Loop
 {
     try {
@@ -72,7 +70,7 @@ Loop
         logToFile(e, 3)
     }
     ; Delay before new loop
-    Sleep control_CO.check_delay
+    Sleep shared_obj.check_delay
 }
 
 #Include <logToFile>
