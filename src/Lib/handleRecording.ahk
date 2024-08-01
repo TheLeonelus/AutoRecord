@@ -56,26 +56,29 @@ handleRecording(id, record_name := "") {
     }
     )", request_id)
     SendMiddlewareMessage(request, 0xFF02)
-    retArray := []
-    retArray := retArray.Push(waitForResponse(request_id, "outputPath"))
-    ; if retArray[2] {
-    ;     MyGui := Gui(, "Last record name")
-    ;     MyGui.Opt("-MinSize 800")
-    ;     MyGui.Add("Text", , "Current label:")
-    ;     MyGui.Add("Text", , "Last name:" retArray[2])
-    ;     MyGui.Add("Text", "v" " ym")  ; The ym option starts a new column of controls.
-    ;     MyGui.Add("Edit", "vinputName")
-    ;     MyGui.Add("Button", "default", "OK").OnEvent("Click", ProcessUserInput)
-    ;     MyGui.OnEvent("Close", ProcessUserInput)
-    ;     MyGui.Show()
-    ;     ProcessUserInput(*)
-    ;     {
-    ;         Saved := MyGui.Submit()  ; Save the contents of named controls into an object.
-    ;         MsgBox("You entered '" Saved.inputName "'.")
-    ;     }
-    ; }
-    if retArray[1]
-        SendMiddlewareMessage("Recording was finished. `n" retArray[2] " was saved.", 0xFF01)
+    retArray := waitForResponse(request_id, "outputPath")
+    if retArray[2] {
+        ; creating GUI window to optionally add label to record file
+        pathArray := []
+        RegExMatch(retArray[2], "^(.*)(\/|\\)(.*)$", &pathArray)
+        gui_prompt := Gui(, "Edit record name")
+        gui_prompt.MarginX := 10
+        gui_prompt.MarginY := 10
+        gui_prompt.SetFont("s10 Q5", "Arial")
+        gui_prompt.Add("Text", "Left", "If you want to add label,  enter it here or leave unchanged to save it as is:")
+        gui_prompt.Add("Text", "Section", "" pathArray[1] pathArray[2])
+        gui_prompt.Add("Edit", "YP vinputName", record_name)
+        gui_prompt.Add("Text", "YP", pathArray[3])
+        gui_prompt.Add("Button", "YP x400 default", "Save").OnEvent("Click", ProcessUserInput)
+        gui_prompt.OnEvent("Close", ProcessUserInput)
+        gui_prompt.Show("AutoSize Center")
+        ProcessUserInput(*)
+        {
+            Saved := gui_prompt.Submit()  ; Save the contents of named controls into an object.
+            FileMove(pathArray[1] pathArray[2] pathArray[3] , pathArray[1] pathArray[2] Saved.inputName " " pathArray[3])
+            SendMiddlewareMessage("Recording was finished. `n" pathArray[1] pathArray[2] Saved.inputName " " pathArray[3] " was saved.", 0xFF01)
+        }
+    }
     else
         SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
     logToFile("exiting handling")
