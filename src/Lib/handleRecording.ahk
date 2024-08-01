@@ -4,27 +4,8 @@
  * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
  */
  handleRecording(id, record_name := "") {
-     try {
-         TryEnterCriticalSection(var_CS)
-         requestId := "profile_args_set"
-         request := Format("
-        (
-        {
-            "op": 6,
-            "d": {
-                "requestType": "SetProfileParameter",
-                "requestId": "{1:s}",
-                "requestData": {
-                    "parameterCategory": "Output",
-                    "parameterName": "FilenameFormatting",
-                    "parameterValue": "{2:s} %DD-%MM %hh-%mm-%ss"
-                }
-            }
-        }
-        )", requestId, record_name)
-         SendMiddlewareMessage(request, 0xFF02)
-         if waitForResponse(requestId) = 100 {
-             requestId := "record_start"
+    logToFile("Starting recording with: " record_name " | " id)
+    request_id := "record_start"
              request := Format("
             (
             {
