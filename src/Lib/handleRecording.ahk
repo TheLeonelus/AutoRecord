@@ -61,11 +61,11 @@ handleRecording(id, record_name := "") {
         ; creating GUI window to optionally add label to record file
         pathArray := []
         RegExMatch(retArray[2], "^(.*)(\/|\\)(.*)$", &pathArray)
-        gui_prompt := Gui(, "Edit record name")
+        gui_prompt := Gui(, A_ScriptName)
         gui_prompt.MarginX := 10
         gui_prompt.MarginY := 10
         gui_prompt.SetFont("s10 Q5", "Arial")
-        gui_prompt.Add("Text", "Left", "If you want to add label,  enter it here or leave unchanged to save it as is:")
+        gui_prompt.Add("Text", "Left", "If you want to add label to recording, enter it here or leave unchanged to save it as is:")
         gui_prompt.Add("Text", "Section", "" pathArray[1] pathArray[2])
         gui_prompt.Add("Edit", "YP vinputName", record_name)
         gui_prompt.Add("Text", "YP", pathArray[3])
@@ -75,8 +75,13 @@ handleRecording(id, record_name := "") {
         ProcessUserInput(*)
         {
             Saved := gui_prompt.Submit()  ; Save the contents of named controls into an object.
-            FileMove(pathArray[1] pathArray[2] pathArray[3] , pathArray[1] pathArray[2] Saved.inputName " " pathArray[3])
-            SendMiddlewareMessage("Recording was finished. `n" pathArray[1] pathArray[2] Saved.inputName " " pathArray[3] " was saved.", 0xFF01)
+            if RegExMatch(Saved.inputName, 'i)^((?>(?!CON)(?!PRN)(?!AUX)(?!NUL)(?!COM\d?)(?!LPT\d?)(?![\<\>\:\“\/\|\?\*\"]).)*)$') != 0 {
+                FileMove(pathArray[1] pathArray[2] pathArray[3] , pathArray[1] pathArray[2] Saved.inputName " " pathArray[3])
+                SendMiddlewareMessage("Recording was finished. `n" pathArray[1] pathArray[2] Saved.inputName " " pathArray[3] " was saved.", 0xFF01)
+            } else {
+                FileMove(pathArray[1] pathArray[2] pathArray[3], pathArray[1] pathArray[2] record_name pathArray[3])
+                SendMiddlewareMessage("You wrote invalid label! File is saved as " pathArray[1] pathArray[2] record_name pathArray[3], 0xFF01)
+            }
         }
     }
     else
