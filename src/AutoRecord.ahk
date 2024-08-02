@@ -122,9 +122,14 @@ OnExit ExitFunc
 
 ExitFunc(ExitReason, ExitCode)
 {
-  MsgBox("Exiting")
-  return 0  ; Callbacks must return non-zero to avoid exit.
-  ; Do not call ExitApp -- that would prevent other callbacks from being called.
+  switch MsgBox("Are you sure you want to exit?", A_ScriptName, 0x4) {
+    case "Yes":
+      return 0  ; Callbacks must return non-zero to avoid exit.
+    case "No":
+      return 1
+    default:
+      return 0  ; Callbacks must return non-zero to avoid exit.
+  }
 }
 
 #Include ExternalLib\WebSocket.ahk
