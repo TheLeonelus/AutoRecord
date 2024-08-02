@@ -1,5 +1,4 @@
 ﻿#NoTrayIcon
-SendMiddlewareMessage("Telegram module initialized.", 0xFF01)
 
 telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 telegram_pid := WinGetPID("ahk_exe Telegram.exe")
