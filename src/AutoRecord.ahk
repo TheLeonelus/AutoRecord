@@ -6,8 +6,10 @@ if A_IsCompiled = 0 {
   OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey" "`n")
   OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
 }
-A_ScriptName := "AutoRecord V1.1"
 
+A_ScriptName := "AutoRecord V1.1"
+DetectHiddenWindows True
+SetTitleMatchMode 2
 
 /**
  * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
@@ -18,15 +20,15 @@ A_ScriptName := "AutoRecord V1.1"
  * <br> Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
  * <br> If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
-shared_obj := {check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status:0}
-try {
+shared_obj := { check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
 
+try {
   ; looking for obs, if not found, trying to start it
   if !ProcessExist("obs64.exe") {
     try {
       Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
       logToFile("OBS wasn't found, trying to start it up")
-      WinWait("ahk_exe obs64.exe",,10000)
+      WinWait("ahk_exe obs64.exe", , 10000)
     }
     catch {
       MsgBox("OBS wasn`t found. Please try to start it up manually.", , 0x2)
@@ -80,6 +82,7 @@ try {
             "op": 1
             }
             )", parsed_message["d"]["rpcVersion"])
+        Sleep shared_obj.check_delay
         self.sendText(response)
         logToFile("Sent: " response)
 
@@ -115,11 +118,10 @@ try {
 
 }
 catch as e {
-  logToFile(e, 3)
+  logToFile(e, 2)
 }
 
 OnExit ExitFunc
-
 ExitFunc(ExitReason, ExitCode)
 {
   switch MsgBox("Are you sure you want to exit?", A_ScriptName, 0x4) {
@@ -133,7 +135,6 @@ ExitFunc(ExitReason, ExitCode)
 }
 
 #Include ExternalLib\WebSocket.ahk
-
 #Include <logToFile>
 #Include <SendNotification>
 #Include <HandleMiddlewareMessage>
