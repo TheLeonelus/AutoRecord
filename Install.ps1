@@ -1,9 +1,8 @@
 # Устанавливаем переменные
-$APPDATA_PATH = $env:AppData
-$AUTO_RECORD_PATH = "$APPDATA_PATH\AutoRecord"
+$AUTO_RECORD_PATH = "$env:Appdata\AutoRecord"
 $AUTO_RECORD_EXE = "$AUTO_RECORD_PATH\AutoRecord.exe"
 $DESKTOP_PATH = [System.Environment]::GetFolderPath('Desktop')
-$STARTUP_PATH = "$APPDATA_PATH\Microsoft\Windows\Start Menu\Programs\Startup"
+$STARTUP_PATH = "$env:Appdata\Microsoft\Windows\Start Menu\Programs\Startup"
 $DOWNLOAD_URL = "https://github.com/theleonelus/autorecord/releases/latest/download/autorecord.zip"
 $ZIP_FILE = "$env:USERPROFILE\AutoRecord.zip"  # полный путь к текущему скрипту
 
@@ -12,8 +11,19 @@ $process = Get-Process -Name "AutoRecord" -ErrorAction SilentlyContinue
 if ($process) {
     Stop-Process -Name "AutoRecord" -Force
     Write-Host "process AutoRecord.exe closed."
-} else {
+}
+else {
     Write-Host "process AutoRecord.exe not found."
+}
+
+# Завершаем процесс obs64.exe, если он запущен
+$process = Get-Process -Name "obs64" -ErrorAction SilentlyContinue
+if ($process) {
+    Stop-Process -Name "obs64" -Force
+    Write-Host "process obs64.exe closed."
+}
+else {
+    Write-Host "process obs64.exe not found."
 }
 
 # Проверяем наличие папки AutoRecord в Roaming и удаляем ее, если она существует
@@ -34,8 +44,20 @@ if (-Not (Test-Path -Path $ZIP_FILE)) {
 }
 
 # Распаковываем архив AutoRecord.zip
-Expand-Archive -Path $ZIP_FILE -DestinationPath $APPDATA_PATH
+Expand-Archive -Path $ZIP_FILE -DestinationPath $env:Appdata
 Write-Host "Done"
+
+# Загружаем конфиг obs-websocket
+$jsonConfig = '
+{
+    "alerts_enabled":  false,
+    "auth_required":  false,
+    "first_load":  false,
+    "server_enabled":  true,
+    "server_password":  "",
+    "server_port":  4455
+}' | ConvertFrom-Json
+$jsonConfig | ConvertTo-Json | Set-Content -Path "$env:appdata\obs-studio\plugin_config\obs-websocket\config.json" -Encoding UTF8
 
 # Создаем ярлык на рабочем столе
 $ws = New-Object -ComObject WScript.Shell
