@@ -18,7 +18,7 @@ A_ScriptName := "AutoRecord V1.1"
  * <br> Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
  * <br> If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
-shared_obj := {check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a")}
+shared_obj := {check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status:0}
 try {
 
   ; looking for obs, if not found, trying to start it
