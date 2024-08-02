@@ -1,6 +1,4 @@
 #NoTrayIcon
-Sleep(shared_obj.check_delay)
-SendMiddlewareMessage("Whatsapp module initialized.", 0xFF01)
 
 GroupAdd "window_call_titles", "Voice call ‎- WhatsApp"
 GroupAdd "window_call_titles", "Аудиозвонок ‎- WhatsApp"

@@ -11,6 +11,8 @@ A_ScriptName := "AutoRecord V1.1"
 DetectHiddenWindows True
 SetTitleMatchMode 2
 
+TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
+
 /**
  * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
  * @property {String} last_message
