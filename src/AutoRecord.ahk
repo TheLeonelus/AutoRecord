@@ -106,7 +106,7 @@ try {
             }
         }
         )"
-        obs_connection.sendText(request)
+        self.sendText(request)
       case 7:
       {
         shared_obj.last_request_response := data
