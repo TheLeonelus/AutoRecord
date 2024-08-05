@@ -8,9 +8,6 @@ if A_IsCompiled = 0 {
 }
 
 A_ScriptName := "AutoRecord V1.1"
-DetectHiddenWindows True
-SetTitleMatchMode 2
-
 TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
 
 /**
@@ -23,27 +20,8 @@ TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
  * <br> If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
 shared_obj := { check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
-
 try {
-  ; looking for obs, if not found, trying to start it
-  if !ProcessExist("obs64.exe") {
-    try {
-      Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
-      logToFile("OBS wasn't found, trying to start it up")
-      WinWait("ahk_exe obs64.exe", , 10000)
-    }
-    catch {
-      MsgBox("OBS wasn`t found. Please try to start it up manually.", , 0x2)
-    }
-  }
-  try {
-    Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
-      message: (self, data) => manageOBSMessages(self, data),
-      close: (self, status, reason) => logToFile(status ' ' reason '`n', 2),
-    })
-  } catch {
-    logToFile("websocket is dead`n")
-  }
+  initialize_OBS()
   script := "
   (
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
@@ -113,6 +91,10 @@ try {
       {
         shared_obj.last_request_response := data
       }
+      case 5:
+        if parsed_message["d"]["eventType"] = "ExitStarted" {
+          reinitialize_OBS()
+        }
       Default:
         OutputDebug "received not handled message`n"
     }
@@ -121,6 +103,64 @@ try {
 }
 catch as e {
   logToFile(e, 2)
+}
+
+/**
+ * Call this function if you need to create new connection to web-socket or OBS was closed
+ */
+reinitialize_OBS() {
+  tg_td_pause := tg_td.Pause(1)
+  wa_td_pause := wa_td.Pause(1)
+  global obs_connection := ""
+  if ProcessExist("obs64.exe") {
+    DetectHiddenWindows True
+    SetTitleMatchMode 2
+    ids_array := WinGetList("ahk_exe obs64.exe")
+    for id in ids_array
+      GroupAdd "OBS", "ahk_id " id
+    logToFile("stopped threads`n")
+    WinWaitClose("ahk_group OBS")
+    MsgBox("OBS was closed! AutoRecord is paused until you start OBS again!", A_ScriptName, 0x1000)
+    logToFile("obs is closed`n")
+    WinWait("ahk_exe obs64.exe")
+    logToFile("obs is opened`n")
+  }
+  initialize_OBS()
+    tg_td_pause := tg_td.Pause(0)
+    wa_td_pause := wa_td.Pause(0)
+}
+/**
+ * Tries to start up OBS and tries to connect to OBS-websocket or free existing connection and reconnect
+ */
+initialize_OBS() {
+initialize_OBS:
+  ; looking for obs, if not found, trying to start it
+  if !ProcessExist("obs64.exe") {
+    try {
+      Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
+      logToFile("OBS wasn't found, trying to start it up")
+      WinWait("ahk_exe obs64.exe", , 20000)
+    }
+    catch {
+      MsgBox("OBS could not be started automatically. Please try to start it up manually.", , 0x0 0x1000)
+      WinWait("ahk_exe obs64.exe")
+    }
+  }
+  Sleep(shared_obj.check_delay)
+  try {
+    Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
+      message: (self, data) => manageOBSMessages(self, data),
+      close: (self, status, reason) => (reinitialize_OBS(),logToFile(status ' ' reason '`n', 2))},
+    )
+  } catch {
+    logToFile("websocket is dead`n")
+    switch MsgBox("OBS web-socket couldnt be connected automatically! Retry to connect?", A_ScriptName, 0x1004) {
+      case "Yes":
+        goto initialize_OBS
+      case "No":
+        ExitApp()
+    }
+  }
 }
 
 OnExit ExitFunc
