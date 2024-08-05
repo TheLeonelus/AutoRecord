@@ -49,9 +49,9 @@ try {
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
   ; Thread to look for Telegram
-  tg_td := Worker(script "`n#Include <Telegram>")
+  tg_td := Worker(script "`n#Include <Telegram>",,"Telegram " A_ScriptName)
   ; Thread to look for Whatsapp
-  wa_td := Worker(script "`n#Include <Whatsapp>")
+  wa_td := Worker(script "`n#Include <Whatsapp>",,"Whatsapp " A_ScriptName)
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -84,14 +84,14 @@ try {
             "op": 1
             }
             )", parsed_message["d"]["rpcVersion"])
-        Sleep shared_obj.check_delay
+        Sleep shared_obj.check_delay * 4
         self.sendText(response)
         logToFile("Sent: " response)
 
       case 2:
         ; identify
         OutputDebug "identified`n"
-        Sleep shared_obj.check_delay
+        Sleep shared_obj.check_delay * 4
         OutputDebug "Setting record output name`n"
         request := "
         (

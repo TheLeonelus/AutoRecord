@@ -1,5 +1,5 @@
 #NoTrayIcon
-
+logToFile("Whatsapp module is loaded.")
 GroupAdd "window_call_titles", "Voice call ‎- WhatsApp"
 GroupAdd "window_call_titles", "Аудиозвонок ‎- WhatsApp"
 GroupAdd "window_call_titles", "Chiamata vocale ‎- WhatsApp"
