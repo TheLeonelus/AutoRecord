@@ -16,9 +16,12 @@ TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
  * @property {String} last_message
  * @property {String} last_request_response
  * @property {Object} info_log
- * <br> DONT DESTRUCT OBJECT
- * <br> Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
- * <br> If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
+ * 
+ * DONT DESTRUCT OBJECT
+ * 
+ * Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
+ * 
+ * If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
 shared_obj := { check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
 try {

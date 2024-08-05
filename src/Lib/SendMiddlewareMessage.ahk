@@ -3,7 +3,8 @@
  * @param {String} StringToSend -  string to pass with code
  * @param {Number} code - HEX machine code which will be distinguished by main thread
  * @returns {Integer} - return value (0 or 1) from main thread
- * <br> Implementation is taken from Autohotkey.com
+ * 
+ * Implementation is taken from Autohotkey.com
  */
 SendMiddlewareMessage(StringToSend, code)
 {
