@@ -1,3 +1,4 @@
+#Requires AutoHotkey v2.1-alpha.14
 #SingleInstance Force
 Persistent
 
@@ -106,11 +107,13 @@ catch as e {
 }
 
 /**
- * Call this function if you need to create new connection to web-socket or OBS was closed
+ * Call this function if you need to create new connection to websocket or OBS was closed
  */
 reinitialize_OBS() {
+  ; pause sub-threads
   tg_td_pause := tg_td.Pause(1)
   wa_td_pause := wa_td.Pause(1)
+  logToFile("stopped threads`n")
   global obs_connection := ""
   if ProcessExist("obs64.exe") {
     DetectHiddenWindows True
@@ -118,19 +121,19 @@ reinitialize_OBS() {
     ids_array := WinGetList("ahk_exe obs64.exe")
     for id in ids_array
       GroupAdd "OBS", "ahk_id " id
-    logToFile("stopped threads`n")
     WinWaitClose("ahk_group OBS")
-    MsgBox("OBS was closed! AutoRecord is paused until you start OBS again!", A_ScriptName, 0x1000)
     logToFile("obs is closed`n")
+    MsgBox("OBS was closed! AutoRecord is paused until you start OBS again!", A_ScriptName, 0x1000)
     WinWait("ahk_exe obs64.exe")
     logToFile("obs is opened`n")
   }
   initialize_OBS()
+  ; unpause sub-threads
     tg_td_pause := tg_td.Pause(0)
     wa_td_pause := wa_td.Pause(0)
 }
 /**
- * Tries to start up OBS and tries to connect to OBS-websocket or free existing connection and reconnect
+ * Tries to start up OBS and connect to OBS-websocket
  */
 initialize_OBS() {
 initialize_OBS:
@@ -139,7 +142,7 @@ initialize_OBS:
     try {
       Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
       logToFile("OBS wasn't found, trying to start it up")
-      WinWait("ahk_exe obs64.exe", , 20000)
+      WinWait("ahk_exe obs64.exe", , shared_obj.check_delay * 40)
     }
     catch {
       MsgBox("OBS could not be started automatically. Please try to start it up manually.", , 0x0 0x1000)
@@ -147,6 +150,7 @@ initialize_OBS:
     }
   }
   Sleep(shared_obj.check_delay)
+  ; try to create websocket instance and connect to server
   try {
     Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
       message: (self, data) => manageOBSMessages(self, data),
@@ -154,8 +158,9 @@ initialize_OBS:
     )
   } catch {
     logToFile("websocket is dead`n")
-    switch MsgBox("OBS web-socket couldnt be connected automatically! Retry to connect?", A_ScriptName, 0x1004) {
+    switch MsgBox("OBS web-socket couldn't be connected automatically! Retry to connect?", A_ScriptName, 0x1004) {
       case "Yes":
+        ; TODO: replace goto because bad
         goto initialize_OBS
       case "No":
         ExitApp()
@@ -172,7 +177,7 @@ ExitFunc(ExitReason, ExitCode)
     case "No":
       return 1
     default:
-      return 0  ; Callbacks must return non-zero to avoid exit.
+      return 0
   }
 }
 
