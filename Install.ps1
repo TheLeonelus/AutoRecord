@@ -44,7 +44,7 @@ if (-Not (Test-Path -Path $ZIP_FILE)) {
 }
 
 # Распаковываем архив AutoRecord.zip
-Expand-Archive -Path $ZIP_FILE -DestinationPath $env:Appdata
+Expand-Archive -Path $ZIP_FILE -DestinationPath $AUTO_RECORD_PATH
 Write-Host "Done"
 
 # Загружаем конфиг obs-websocket
