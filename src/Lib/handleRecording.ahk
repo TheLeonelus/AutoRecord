@@ -134,3 +134,4 @@ WaitForResponse(id, key := "") {
 }
 
 #Include <logToFile>
+#Include <SendMiddlewareMessage>
