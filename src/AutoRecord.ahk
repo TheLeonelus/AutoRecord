@@ -13,9 +13,11 @@ TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
 
 /**
  * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
- * @property {String} last_message
- * @property {String} last_request_response
- * @property {Object} info_log
+ * @property {String} last_message - stores last received message from OBS
+ * @property {String} last_request_response - stores last receive response message from OBS
+ * @property {Object} info_log - stores `FileObject` to `info.log`
+ * @property {Integer} record_status - stores status of recording, so we can keep different subthreads from accesing `handleRecording` simultaneously
+ * @property {Number} script_hwnd - stores HWND of main script, so sub-threads can use it in sendMessage()
  * 
  * DONT DESTRUCT OBJECT
  * 
@@ -23,7 +25,7 @@ TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
  * 
  * If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
-shared_obj := { check_delay: 500, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
+shared_obj := { check_delay: 1000, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
 try {
   initialize_OBS()
   script := "
@@ -66,14 +68,14 @@ try {
             "op": 1
             }
             )", parsed_message["d"]["rpcVersion"])
-        Sleep shared_obj.check_delay * 4
+        Sleep shared_obj.check_delay
         self.sendText(response)
         logToFile("Sent: " response)
 
       case 2:
         ; identify
         OutputDebug "identified`n"
-        Sleep shared_obj.check_delay * 4
+        Sleep shared_obj.check_delay
         OutputDebug "Setting record output name`n"
         request := "
         (
@@ -145,7 +147,7 @@ initialize_OBS:
     try {
       Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
       logToFile("OBS wasn't found, trying to start it up")
-      WinWait("ahk_exe obs64.exe", , shared_obj.check_delay * 40)
+      WinWait("ahk_exe obs64.exe", , shared_obj.check_delay * 20)
     }
     catch {
       MsgBox("OBS could not be started automatically. Please try to start it up manually.", , 0x0 0x1000)

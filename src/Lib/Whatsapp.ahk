@@ -1,8 +1,8 @@
 #NoTrayIcon
 logToFile("Whatsapp module is loaded.")
-GroupAdd "window_call_titles", "Voice call ‎- WhatsApp"
-GroupAdd "window_call_titles", "Аудиозвонок ‎- WhatsApp"
-GroupAdd "window_call_titles", "Chiamata vocale ‎- WhatsApp"
+GroupAdd "window_call_titles", "Voice call ‎- WhatsApp" ; English
+GroupAdd "window_call_titles", "Аудиозвонок ‎- WhatsApp" ; Russian
+GroupAdd "window_call_titles", "Chiamata vocale ‎- WhatsApp" ; Italian
 
 Loop
 {
@@ -20,4 +20,3 @@ Loop
 
 #Include <logToFile>
 #Include <handleRecording>
-#Include <SendMiddlewareMessage>

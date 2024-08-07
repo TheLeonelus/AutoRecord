@@ -1,4 +1,4 @@
-﻿#NoTrayIcon
+#NoTrayIcon
 logToFile("Telegram module is loaded.")
 telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 telegram_pid := WinGetPID("ahk_exe Telegram.exe")
@@ -74,4 +74,3 @@ Loop
 
 #Include <logToFile>
 #Include <handleRecording>
-#Include <SendMiddlewareMessage>
