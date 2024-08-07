@@ -1,4 +1,4 @@
 @echo off
-powershell -command "iwr https://raw.githubusercontent.com/TheLeonelus/AutoRecord/bat2ps1/Install.ps1 | iex"
+powershell -command "iwr https://raw.githubusercontent.com/TheLeonelus/AutoRecord/main/Install.ps1 | iex"
 
 pause
