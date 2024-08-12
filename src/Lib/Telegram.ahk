@@ -32,7 +32,7 @@ Loop
                         telegram_window_list.RemoveAt(index)
                     }
                 }
-                logToFile("TG id: " telegram_id " | " toLog)
+                OutputDebug("TG id: " telegram_id " | " toLog)
                 ; Label for exiting outer Loop
                 languageDefining:
                 for window in telegram_window_list {
