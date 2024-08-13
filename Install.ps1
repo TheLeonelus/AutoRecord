@@ -26,6 +26,11 @@ if ($process) {
 else {
     Write-Host "process obs64.exe not found."
 }
+# Загружаем последний релиз AutoRecord.zip с GitHub
+Write-Host "Downloading latest release of AutoRecord..."
+Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
+
+Wait-Process -Id $processAR.id
 
 # Clean old code
 if (Test-Path -Path $AUTO_RECORD_PATH) {
