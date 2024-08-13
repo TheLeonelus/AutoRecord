@@ -7,9 +7,12 @@ if A_IsCompiled = 0 {
   OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey" "`n")
   OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
 }
-
-A_ScriptName := "AutoRecord V1.1"
+version := "0.0.0"
+A_ScriptName := "AutoRecord V" version
 TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
+
+AutoUpdateChecker(version)
+version := ""
 
 /**
  * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
@@ -33,9 +36,9 @@ try {
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
   ; Thread to look for Telegram
-  tg_td := Worker(script "`n#Include <Telegram>",,"Telegram " A_ScriptName)
+  tg_td := Worker(script "`n#Include <Telegram>", , "Telegram " A_ScriptName)
   ; Thread to look for Whatsapp
-  wa_td := Worker(script "`n#Include <Whatsapp>",,"Whatsapp " A_ScriptName)
+  wa_td := Worker(script "`n#Include <Whatsapp>", , "Whatsapp " A_ScriptName)
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -134,8 +137,8 @@ reinitialize_OBS() {
   }
   initialize_OBS()
   ; unpause sub-threads
-    tg_td_pause := tg_td.Pause(0)
-    wa_td_pause := wa_td.Pause(0)
+  tg_td_pause := tg_td.Pause(0)
+  wa_td_pause := wa_td.Pause(0)
 }
 /**
  * Tries to start up OBS and connect to OBS-websocket
@@ -159,7 +162,7 @@ initialize_OBS:
   try {
     Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
       message: (self, data) => manageOBSMessages(self, data),
-      close: (self, status, reason) => (reinitialize_OBS(),logToFile(status ' ' reason '`n', 2))},
+      close: (self, status, reason) => (reinitialize_OBS(), logToFile(status ' ' reason '`n', 2)) },
     )
   } catch {
     logToFile("websocket is dead`n")
@@ -190,3 +193,4 @@ ExitFunc(ExitReason, ExitCode)
 #Include <logToFile>
 #Include <SendNotification>
 #Include <HandleMiddlewareMessage>
+#Include <AutoUpdateChecker>
