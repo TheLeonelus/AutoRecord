@@ -2,9 +2,17 @@
 #SingleInstance Force
 Persistent
 
-TraySetIcon("*", , true)
-A_ScriptName := "AutoRecord V1.1"
-TrayTip(A_ScriptName " was initialized.", , 0x4)
+if A_IsCompiled = 0 {
+  SetWorkingDir(A_AppData "\AutoRecord")
+  OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey" "`n")
+  OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
+}
+version := "0.0.0"
+A_ScriptName := "AutoRecord V" version
+TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
+
+AutoUpdateChecker(version)
+version := ""
 
 try {
   /**
@@ -126,3 +134,4 @@ ExitFunc(ExitReason, ExitCode)
 #Include <logToFile>
 #Include <ReceiveCallbacks>
 #Include <fillTrayMenu>
+#Include <AutoUpdateChecker>
