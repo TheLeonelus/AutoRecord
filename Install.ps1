@@ -7,8 +7,8 @@ $DOWNLOAD_URL = "https://github.com/theleonelus/autorecord/releases/latest/downl
 $ZIP_FILE = "$env:USERPROFILE\AutoRecord.zip"  # полный путь к текущему скрипту
 
 # Завершаем процесс AutoRecord.exe, если он запущен
-$process = Get-Process -Name "AutoRecord" -ErrorAction SilentlyContinue
-if ($process) {
+$processAR = Get-Process -Name "AutoRecord" -ErrorAction SilentlyContinue
+if ($processAR) {
     Stop-Process -Name "AutoRecord" -Force
     Write-Host "process AutoRecord.exe closed."
 }
@@ -17,14 +17,19 @@ else {
 }
 
 # Завершаем процесс obs64.exe, если он запущен
-$process = Get-Process -Name "obs64" -ErrorAction SilentlyContinue
-if ($process) {
+$processOBS = Get-Process -Name "obs64" -ErrorAction SilentlyContinue
+if ($processOBS) {
     Stop-Process -Name "obs64" -Force
     Write-Host "process obs64.exe closed."
 }
 else {
     Write-Host "process obs64.exe not found."
 }
+# Загружаем последний релиз AutoRecord.zip с GitHub
+Write-Host "Downloading latest release of AutoRecord..."
+Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
+
+Wait-Process -Id $processAR.id
 
 # Проверяем наличие папки AutoRecord в Roaming и удаляем ее, если она существует
 if (Test-Path -Path $AUTO_RECORD_PATH) {
@@ -32,9 +37,7 @@ if (Test-Path -Path $AUTO_RECORD_PATH) {
     Write-Host "folder $AUTO_RECORD_PATH deleted."
 }
 
-# Загружаем последний релиз AutoRecord.zip с GitHub
-Write-Host "Downloading latest release of AutoRecord..."
-Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
+
 
 # Проверяем успешность загрузки файла
 if (-Not (Test-Path -Path $ZIP_FILE)) {
