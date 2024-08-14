@@ -192,17 +192,33 @@ openLogFile() {
   return FileOpen(log_path, "a")
 }
 
+/**
+ * callback for `sendMessage` to exit whole application
+ */
+stopApplication(wParam, lParam, msg, hwnd) {
+  message := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
+  MsgBox("Crtical error has occured!`nError: " message "`nPlease restart AutoRecord or contact your support.", ,"0x1000 T10")
+  ExitApp()
+}
+
 OnExit ExitFunc
+/**
+ * 
+ * @param {String} ExitReason
+ * @param {Integer} ExitCode
+ * @returns {Integer} 
+ */
 ExitFunc(ExitReason, ExitCode)
 {
-  switch MsgBox("Are you sure you want to exit?", A_ScriptName, 0x4) {
-    case "Yes":
-      return 0  ; Callbacks must return non-zero to avoid exit.
-    case "No":
-      return 1
-    default:
-      return 0
+  if ExitReason = "Menu" || ExitReason = "Single" {
+    switch MsgBox("Are you sure you want to exit?", , 0x4) {
+      case "Yes":
+        return 0  ; Callbacks must return non-zero to avoid exit.
+      case "No":
+        return 1
+    }
   }
+  return 0
 }
 
 #Include ExternalLib\WebSocket.ahk

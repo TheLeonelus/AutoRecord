@@ -18,7 +18,7 @@ SendMiddlewareMessage(StringToSend, code)
     Prev_TitleMatchMode := A_TitleMatchMode
     DetectHiddenWindows True
     SetTitleMatchMode 2
-    TimeOutTime := 4000  ; Optional. Milliseconds to wait for response from receiver.ahk. Default is 5000
+    TimeOutTime := 11000  ; Optional. Milliseconds to wait for response from receiver.ahk. Default is 5000
     ; Must use SendMessage not PostMessage.
     RetValue := SendMessage(code, 0, CopyDataStruct, , shared_obj.script_hwnd, , , , TimeOutTime) ; Here we send actual message
     DetectHiddenWindows Prev_DetectHiddenWindows  ; Restore original setting for the caller.

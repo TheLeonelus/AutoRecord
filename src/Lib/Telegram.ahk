@@ -64,6 +64,7 @@ Loop
     }
     catch as e {
         logToFile(e, 3)
+        pause(1)
     }
     ; Delay before new loop
     Sleep shared_obj.check_delay
