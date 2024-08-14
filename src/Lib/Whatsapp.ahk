@@ -12,7 +12,7 @@ GroupAdd "window_call_titles", "Chiamata vocale ‎- WhatsApp" ; Italian
 Loop
 {
     try {
-        ; looking for whatsapp window
+        ; look for whatsapp window
         window_id := WinWait("ahk_group window_call_titles")
         handleRecording(window_id, "Whatsapp")
     }
