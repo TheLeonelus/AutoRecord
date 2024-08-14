@@ -3,7 +3,7 @@
 Persistent
 
 OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey`n")
-TraySetIcon(".\icon.ico")
+TraySetIcon("*",, true)
 A_ScriptName := "AutoRecord V1.1"
 TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
 
@@ -65,7 +65,7 @@ openLogFile() {
  */
 stopApplication(wParam, lParam, msg, hwnd) {
   message := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
-  MsgBox("Crtical error has occured!`nError: " message "`nPlease restart AutoRecord or contact your support.", , "0x1000 T10")
+  MsgBox("Crtical error has occured!`nError: " message "`nPlease restart AutoRecord or contact your support.", , "0x1000")
   ExitApp()
 }
 
