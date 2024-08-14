@@ -25,7 +25,7 @@ TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
  * 
  * If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
  */
-shared_obj := { check_delay: 1000, last_message: "{}", last_request_response: "{}", info_log: FileOpen(A_AppData "\AutoRecord\info.log", "a"), record_status: 0, script_hwnd: A_ScriptHwnd }
+shared_obj := { check_delay: 1000, last_message: "{}", last_request_response: "{}", info_log: openLogFile(), record_status: 0, script_hwnd: A_ScriptHwnd }
 try {
   initialize_OBS()
   script := "
@@ -33,9 +33,9 @@ try {
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
   ; Thread to look for Telegram
-  tg_td := Worker(script "`n#Include <Telegram>",,"Telegram " A_ScriptName)
+  tg_td := Worker(script "`n#Include <Telegram>", , "Telegram " A_ScriptName)
   ; Thread to look for Whatsapp
-  wa_td := Worker(script "`n#Include <Whatsapp>",,"Whatsapp " A_ScriptName)
+  wa_td := Worker(script "`n#Include <Whatsapp>", , "Whatsapp " A_ScriptName)
   ; handle signal to send notification
   OnMessage(0xFF01, SendNotification)
   ; handle signal to send command to OBS websocket
@@ -134,8 +134,8 @@ reinitialize_OBS() {
   }
   initialize_OBS()
   ; unpause sub-threads
-    tg_td_pause := tg_td.Pause(0)
-    wa_td_pause := wa_td.Pause(0)
+  tg_td_pause := tg_td.Pause(0)
+  wa_td_pause := wa_td.Pause(0)
 }
 /**
  * Tries to start up OBS and connect to OBS-websocket
@@ -159,7 +159,7 @@ initialize_OBS:
   try {
     Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
       message: (self, data) => manageOBSMessages(self, data),
-      close: (self, status, reason) => (reinitialize_OBS(),logToFile(status ' ' reason '`n', 2))},
+      close: (self, status, reason) => (reinitialize_OBS(), logToFile(status ' ' reason '`n', 2)) },
     )
   } catch {
     logToFile("websocket is dead`n")
@@ -171,6 +171,25 @@ initialize_OBS:
         ExitApp()
     }
   }
+}
+
+/**
+ * Check if .log file exists, if it's not, then create and write in it
+ * if it's size exceeds limit - rename/replace it to .old and create the new one.
+ * @returns {File} - opened object of `info.log`
+ */
+openLogFile() {
+  OutputDebug(A_WorkingDir "`n")
+  log_path := A_AppData "\AutoRecord\info.log"
+  old_log_path := A_AppData "\AutoRecord\info.log.old"
+  OutputDebug(FileExist(log_path) " flags | size " FileGetSize(log_path, "K") "`n")
+  if FileExist(log_path) != "" {
+    if FileGetSize(log_path, "K") >= 1000 {
+      OutputDebug(log_path " is too big! Rotating...`n")
+      FileMove(log_path, old_log_path, 1)
+    }
+  }
+  return FileOpen(log_path, "a")
 }
 
 OnExit ExitFunc
