@@ -2,10 +2,9 @@
 #SingleInstance Force
 Persistent
 
-OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey`n")
-TraySetIcon("*",, true)
+TraySetIcon("*", , true)
 A_ScriptName := "AutoRecord V1.1"
-TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
+TrayTip("AutoRecord was initialized.", , 0x4)
 
 try {
   /**
@@ -28,10 +27,10 @@ try {
   (
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
-  ; Thread to look for Telegram
-  tg_td := Worker(script "`n#Include <Telegram>", , "Telegram " A_ScriptName)
-  ; Thread to look for Whatsapp
-  wa_td := Worker(script "`n#Include <Whatsapp>", , "Whatsapp " A_ScriptName)
+  ; Thread for Telegram module
+  tg_td := Worker(script "`n#Include <Telegram>", , A_ScriptName " | Telegram")
+  ; Thread for Whatsapp module
+  wa_td := Worker(script "`n#Include <Whatsapp>", , A_ScriptName " | Whatsapp")
 
   OnMessage(0xFF01, SendNotification)
   OnMessage(0xFF02, sendOBSCommand)
@@ -63,10 +62,8 @@ openLogFile() {
 
 OnExit ExitFunc
 /**
- * 
  * @param {String} ExitReason
  * @param {Integer} ExitCode
- * @returns {Integer} 
  */
 ExitFunc(ExitReason, ExitCode)
 {
