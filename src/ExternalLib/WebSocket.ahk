@@ -6,8 +6,8 @@
  * @date 2024/01/27
  * @version 1.0.7
  ***********************************************************************
+ * note: edited to v2.0 syntax 
 */
-
 #DllLoad winhttp.dll
 class WebSocket {
     Ptr := 0, async := 0, readyState := 0, url := ''
@@ -257,10 +257,3 @@ class WebSocket {
         this.Ptr := 0
     }
 }
-
-; ws := WebSocket(wss_or_ws_url, {
-; 	message: (self, data) => FileAppend(Data '`n', '*', 'utf-8'),
-; 	close: (self, status, reason) => FileAppend(status ' ' reason '`n', '*', 'utf-8')
-; })
-; ws.sendText('hello'), Sleep(100)
-; ws.send(0, Buffer(10), 10), Sleep(100)

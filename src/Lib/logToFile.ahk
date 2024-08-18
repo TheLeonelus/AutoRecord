@@ -3,7 +3,7 @@
  * @param {String} message - string to be written
  * @param {Integer} severity - represents message severity
  * 
- * 1 - Info (if omitted)
+ * 1 - Info *(if omitted)*
  * 
  * 2 - Warn
  * 
@@ -16,11 +16,13 @@ logToFile(varToLog, severity := 1) {
     template := A_Hour ":" A_Min ":" A_Sec " " A_DD "." A_MM " | " severity_array[severity] "`n"
     if severity >= 3 {
         result := template "Message: " varToLog.Message "`nWhat: " varToLog.What "`nExtra: " varToLog.Extra "`nLine: " varToLog.Line "`nFile: " varToLog.File "`nStack:" varToLog.Stack "`n=====`n"
-        Throw(varToLog)
+        SendMiddlewareMessage(varToLog.Message, 0xFF03)
     }
-        else
+    else
         result := template varToLog "`n"
     OutputDebug(result)
     shared_obj.info_log.Seek(0, 2)
     shared_obj.info_log.Write(result)
 }
+
+#Include <SendMiddlewareMessage>
