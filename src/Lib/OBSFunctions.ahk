@@ -75,7 +75,7 @@ reinitialize_OBS() {
             GroupAdd "OBS", "ahk_id " id
         WinWaitClose("ahk_group OBS")
         logToFile("obs is closed`n")
-        MsgBox("OBS was closed! AutoRecord is paused until you start OBS again!", A_ScriptName, 0x1000)
+        MsgBox("OBS was closed! AutoRecord is paused until you start OBS again!", , 0x1000)
         WinWait("ahk_exe obs64.exe")
         logToFile("obs is opened`n")
     }
@@ -84,6 +84,7 @@ reinitialize_OBS() {
     tg_td.Pause(0)
     wa_td.Pause(0)
 }
+
 /**
  * Tries to start up OBS and connect to OBS-websocket
  */
@@ -100,25 +101,31 @@ initialize_OBS() {
             WinWait("ahk_exe obs64.exe")
         }
     }
-initialize_websocket:
-    Sleep(shared_obj.check_delay)
     ; try to create websocket instance and connect to server
-    try {
-        Global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
-            message: (self, data) => manageOBSMessages(self, data),
-            close: (self, status, reason) => (reinitialize_OBS(), logToFile(status ' ' reason '`n', 2)) },
-        )
-    } catch {
-        logToFile("websocket is dead`n")
-        switch MsgBox("OBS websocket couldn't be connected automatically! Maybe OBS isn't loaded yet, retry to connect?", A_ScriptName, 0x1004) {
-            case "Yes":
-                ; TODO: replace goto because bad
-                goto initialize_websocket
-            case "No":
-                ExitApp()
+    obs_connection := ""
+    retry_count := 0
+    while !obs_connection {
+        try {
+            global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
+                message: (self, data) => manageOBSMessages(self, data),
+                close: (self, status, reason) => (reinitialize_OBS(), logToFile(status ' ' reason '`n', 2)) },
+            )
+        } catch as e {
+            retry_count++
+            Sleep(shared_obj.check_delay)
+        }
+        finally {
+            if retry_count >= 3 {
+                logToFile("no websocket? :(")
+                switch MsgBox("OBS error: " e.Message "`nMaybe OBS isn't loaded yet, retry to connect?", , 0x1004) {
+                    case "Yes":
+                        retry_count := 0
+                    case "No":
+                        logToFile(Error("Couldn't establish connection to websocket. Check your configuration or re-run installer!"), 3)
+                }
+            }
         }
     }
 }
 
-#Include <HandleMiddlewareMessage>
 #include <logToFile>
