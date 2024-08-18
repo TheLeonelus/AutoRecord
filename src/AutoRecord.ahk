@@ -60,14 +60,6 @@ openLogFile() {
   return FileOpen(log_path, "a")
 }
 
-/**
- * callback for `sendMessage` to exit whole application
- */
-stopApplication(wParam, lParam, msg, hwnd) {
-  message := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
-  MsgBox("Crtical error has occured!`nError: " message "`nPlease restart AutoRecord or contact your support.", , "0x1000")
-  ExitApp()
-}
 
 OnExit ExitFunc
 /**
@@ -92,5 +84,4 @@ ExitFunc(ExitReason, ExitCode)
 #Include ExternalLib\WebSocket.ahk
 #Include <OBSFunctions>
 #Include <logToFile>
-#Include <SendNotification>
-#Include <HandleMiddlewareMessage>
+#Include <ReceiveCallbacks>

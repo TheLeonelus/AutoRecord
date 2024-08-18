@@ -1,15 +1,4 @@
 /**
- * callback for `sendMessage` to send messages to OBS
- */
-sendOBSCommand(wParam, lParam, msg, hwnd)
-{
-    response := HandleMiddlewareMessage(wParam, lParam, msg, hwnd)
-    logToFile("Got msg to send: " response)
-    obs_connection.sendText(response)
-    return true
-}
-
-/**
  * handle responses from server
  * @param {WebSocket} self - WebSocket instance
  * @param {String} data - received message
