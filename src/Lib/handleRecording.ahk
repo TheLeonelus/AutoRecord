@@ -64,7 +64,7 @@ handleRecording(id, record_name := "") {
                 ; creating GUI window to optionally add label to record file
                 pathArray := []
                 RegExMatch(retArray[2], "^(.*)(\/|\\)(.*)$", &pathArray)
-                gui_prompt := Gui(, A_ScriptName)
+                gui_prompt := Gui()
                 gui_prompt.MarginX := 10
                 gui_prompt.MarginY := 10
                 gui_prompt.SetFont("s10 Q5", "Arial")
