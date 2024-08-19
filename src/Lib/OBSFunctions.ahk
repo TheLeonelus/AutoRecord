@@ -103,9 +103,8 @@ initializeOBS() {
         }
     }
     ; try to create websocket instance and connect to server
-    obs_connection := ""
     retry_count := 0
-    while !obs_connection {
+    while !IsSet(obs_connection) {
         try {
             global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
                 message: (self, data) => manageOBSMessages(self, data),
