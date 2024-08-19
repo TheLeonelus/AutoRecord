@@ -14,6 +14,10 @@ try {
    * @property {Object} info_log - stores `FileObject` to `info.log`
    * @property {Integer} record_status - stores status of recording, so we can keep different subthreads from accesing `handleRecording` simultaneously
    * @property {Number} script_hwnd - stores HWND of main script, so sub-threads can use it in sendMessage()
+   * @property {Map} settings - map object with settings parameters
+   * @property {Boolean} tg_label - show prompt at the end of Telegram recording 
+   * @property {Boolean} wa_label - show prompt at the end of Whatsapp recording 
+   * @property {Boolean} do_check_updates - check for updates at the startup
    * 
    * DONT DESTRUCT OBJECT
    * 
@@ -21,8 +25,23 @@ try {
    * 
    * If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
    */
-  global shared_obj := { check_delay: 1000, last_message: "{}", last_request_response: "{}", info_log: openLogFile(), record_status: 0, script_hwnd: A_ScriptHwnd }
-  initialize_OBS()
+  global shared_obj := {
+    check_delay: 1000,
+    last_message: "{}",
+    last_request_response: "{}",
+    info_log: openLogFile(),
+    record_status: 0,
+    script_hwnd: A_ScriptHwnd,
+    settings: Map(
+      "tg_label", 0,
+      "wa_label", 0,
+      "do_check_updates", 0
+    )
+  }
+  setSettings()
+  logToFile(A_ScriptDir)
+  initializeOBS()
+  fillTrayMenu()
   script := "
   (
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
@@ -59,6 +78,25 @@ openLogFile() {
   return FileOpen(log_path, "a")
 }
 
+/**
+ * @param {Boolean} rewrite - function can be called again with this param evaluated to true to rewrite file
+ * 
+ * Check if `settings.json` exists, otherwise create it
+ * If file's content is valid json, then apply it to shared object and modify tray menu
+ */
+setSettings(rewrite := false) {
+  settings_json_path := A_ScriptDir "\settings.json"
+  if !FileExist(settings_json_path) || rewrite {
+    settings_json := FileOpen(settings_json_path, "w")
+    settings_json.Write(JSON.stringify(shared_obj.settings))
+    settings_json.Close()
+  } else {
+    settings_json := FileOpen(settings_json_path, "a -d")
+    settings_json.Seek(0, 0)
+    settings_content := settings_json.Read()
+    shared_obj.settings := JSON.parse(settings_content)
+  }
+}
 
 OnExit ExitFunc
 /**
