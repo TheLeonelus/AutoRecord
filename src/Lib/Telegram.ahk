@@ -1,5 +1,6 @@
 ﻿#NoTrayIcon
 logToFile("Telegram module is loaded.")
+
 telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 /**
  * Stores `media viewer` window titles, because we can't distinguish it from window call otherwise
@@ -11,6 +12,7 @@ telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
 languages_array := ["Media viewer", "Просмотр медиа", "Visualizador de Mídia", "Lecteur multimédia", "미디어 뷰어", "Visualizzatore multimediale"]
 ; keeps single string after language defining
 chosen_language := ""
+
 Loop
 {
     try {
@@ -46,11 +48,11 @@ Loop
                             }
                         }
                         if RegExMatch(title, "^((?>(?!TelegramDesktop).)*)$")
-                            handleRecording(window, title)
+                            handleRecording(window, title, shared_obj.settings["show_tg_label"])
                     } else {
                         ; If language is defined - do simpler validation
                         if RegExMatch(title, "^((?>(?!" chosen_language ")(?!TelegramDesktop).)*)$")
-                            handleRecording(window, title)
+                            handleRecording(window, title, shared_obj.settings["show_tg_label"])
                     }
                 }
             }

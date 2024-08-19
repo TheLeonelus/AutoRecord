@@ -15,9 +15,9 @@ try {
    * @property {Integer} record_status - status of recording, which stops different subthreads from accesing `handleRecording` simultaneously
    * @property {Number} script_hwnd - HWND of main script to use it sub-threads `sendMessage()`
    * @property {Map} settings - map object with settings parameters
-   * @property {Boolean} tg_label - show prompt at the end of Telegram recording 
-   * @property {Boolean} wa_label - show prompt at the end of Whatsapp recording 
-   * @property {Boolean} do_check_updates - check for updates at the startup
+   * @property {Boolean} show_tg_label - show prompt at the end of Telegram recording 
+   * @property {Boolean} show_wa_label - show prompt at the end of Whatsapp recording 
+   * @property {Boolean} check_for_update - check for updates at the startup
    * 
    * DONT DESTRUCT OBJECT
    * 
@@ -33,15 +33,16 @@ try {
     record_status: 0,
     script_hwnd: A_ScriptHwnd,
     settings: Map(
-      "tg_label", 0,
-      "wa_label", 0,
-      "do_check_updates", 0
+      "show_tg_label", 1,
+      "show_wa_label", 1,
+      "check_for_update", 1
     )
   }
   setSettings()
-  logToFile(A_ScriptDir)
-  initializeOBS()
   fillTrayMenu()
+  if shared_obj.settings["check_for_update"]
+    OutputDebug("") ; Check for updates here
+  initializeOBS()
   script := "
   (
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))

@@ -14,7 +14,7 @@ Loop
     try {
         ; look for whatsapp window
         window_id := WinWait("ahk_group window_call_titles")
-        handleRecording(window_id, "Whatsapp")
+        handleRecording(window_id, "Whatsapp", shared_obj.settings["show_wa_label"])
     }
     catch as e {
         logToFile(e, 3)

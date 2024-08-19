@@ -1,8 +1,9 @@
 /**
  * @param {Number} id - window's call 
- * @param {string} record_name - caller's name
+ * @param {String} record_name - caller's name
+ * @param {Boolean} setitng_label - whether show prompt after recording or not
  */
-handleRecording(id, record_name) {
+handleRecording(id, record_name, setting_label := 1) {
     if !shared_obj.record_status {
         shared_obj.record_status := 1
         logToFile("Starting recording with: " record_name " | " id, 2)
@@ -59,7 +60,7 @@ handleRecording(id, record_name) {
         SendMiddlewareMessage(request, 0xFF02)
         retArray := waitForResponse(request_id, "outputPath")
         if retArray[2] {
-            if retArray[2] {
+            if (setting_label) {
                 ; creating GUI window to optionally add label to record file
                 pathArray := []
                 RegExMatch(retArray[2], "^(.*)(\/|\\)(.*)$", &pathArray)
@@ -88,12 +89,12 @@ handleRecording(id, record_name) {
                             FileMove(pathArray[1] pathArray[2] pathArray[3], pathArray[1] pathArray[2] record_name pathArray[3])
                         catch
                             logToFile(Error("Couldnt rename recording! Does it exist?"), 3)
-                        SendMiddlewareMessage("Invalid label! File is saved as " pathArray[1] pathArray[2] record_name " " pathArray[3], 0xFF01)
+                        SendMiddlewareMessage("Invalid label! File is saved as " retArray[2], 0xFF01)
                     }
                 }
             }
             else
-                SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
+                SendMiddlewareMessage("Recording was finished. `n" retArray[2] " was saved.", 0xFF01)
         }
         else
             SendMiddlewareMessage("Record couldn't be finished. Report if problem persists", 0xFF01)
