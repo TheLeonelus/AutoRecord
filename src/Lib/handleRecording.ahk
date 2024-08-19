@@ -1,9 +1,8 @@
 /**
- * 
  * @param {Number} id - window's call 
- * @param {string} record_name - caller's name if it's known, otherwise if omitted, prompt box will ask at the end, how to name recording
+ * @param {string} record_name - caller's name
  */
-handleRecording(id, record_name := "") {
+handleRecording(id, record_name) {
     try {
         if !shared_obj.record_status {
             shared_obj.record_status := 1
@@ -106,7 +105,6 @@ handleRecording(id, record_name := "") {
 }
 
 /**
- * 
  * @param {String} id - request id which we need to wait for
  * @param {string} key - additional key needed to be returned
  * @returns {Number} - request status code, if `key` was omitted

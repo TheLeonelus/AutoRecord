@@ -8,12 +8,12 @@ TrayTip(A_ScriptName " was initialized.", , 0x4)
 
 try {
   /**
-   * @property {Integer} check_delay - stores time which Sleep occurs, so we can change it at one place only
-   * @property {String} last_message - stores last received message from OBS
-   * @property {String} last_request_response - stores last receive response message from OBS
-   * @property {Object} info_log - stores `FileObject` to `info.log`
-   * @property {Integer} record_status - stores status of recording, so we can keep different subthreads from accesing `handleRecording` simultaneously
-   * @property {Number} script_hwnd - stores HWND of main script, so sub-threads can use it in sendMessage()
+   * @property {Integer} check_delay - unified time to wait for anything
+   * @property {String} last_message - last received message from OBS
+   * @property {String} last_request_response - last received response message from OBS
+   * @property {Object} info_log - `FileObject` to `info.log`
+   * @property {Integer} record_status - status of recording, which stops different subthreads from accesing `handleRecording` simultaneously
+   * @property {Number} script_hwnd - HWND of main script to use it sub-threads `sendMessage()`
    * @property {Map} settings - map object with settings parameters
    * @property {Boolean} tg_label - show prompt at the end of Telegram recording 
    * @property {Boolean} wa_label - show prompt at the end of Whatsapp recording 
@@ -21,9 +21,9 @@ try {
    * 
    * DONT DESTRUCT OBJECT
    * 
-   * Object declaration is used, so local functions would explicitly access global object variable, which stores in it's properties shared variables
+   * Object declaration is used, so local functions can explicitly access global object variable, which stores in it's properties shared variables
    * 
-   * If I'd deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not very good at
+   * If you would deconstruct it and make multiple alliases, it'd start some shenanigans with local-global assignment, which i'm not going to deal with
    */
   global shared_obj := {
     check_delay: 1000,
@@ -50,6 +50,7 @@ try {
   tg_td := Worker(script "`n#Include <Telegram>", , A_ScriptName " | Telegram")
   ; Thread for Whatsapp module
   wa_td := Worker(script "`n#Include <Whatsapp>", , A_ScriptName " | Whatsapp")
+  script := unset
 
   OnMessage(0xFF01, SendNotification)
   OnMessage(0xFF02, sendOBSCommand)
@@ -60,15 +61,16 @@ catch as e {
 }
 
 /**
+ * @returns {File} - opened object of `info.log`
+ * 
  * Check if .log file exists or create and write in it
  * if it's size exceeds limit - replace it to .old and create the new one.
- * @returns {File} - opened object of `info.log`
  */
 openLogFile() {
   OutputDebug(A_WorkingDir "`n")
-  log_path := A_AppData "\AutoRecord\info.log"
-  old_log_path := A_AppData "\AutoRecord\info.log.old"
-  OutputDebug(FileExist(log_path) " flags | size " FileGetSize(log_path, "K") "`n")
+  log_path := A_ScriptDir "\info.log"
+  old_log_path := A_ScriptDir "\info.log.old"
+  OutputDebug(FileExist(log_path) " flags | size " (FileExist(log_path) ? FileGetSize(log_path, "K") "`n" : ""))
   if FileExist(log_path) != "" {
     if FileGetSize(log_path, "K") >= 1000 {
       OutputDebug(log_path " is too big! Rotating...`n")
@@ -105,7 +107,7 @@ OnExit ExitFunc
  */
 ExitFunc(ExitReason, ExitCode)
 {
-  if ExitReason = "Menu" || ExitReason = "Single" {
+  if ExitReason = "Menu" || ExitReason = "Single" || ExitCode = 1 {
     switch MsgBox("Are you sure you want to exit?", , 0x4) {
       case "Yes":
         return 0  ; Callbacks must return non-zero to avoid exit.

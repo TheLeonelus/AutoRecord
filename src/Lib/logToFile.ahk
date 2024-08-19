@@ -1,5 +1,4 @@
 /**
- * 
  * @param {String} message - string to be written
  * @param {Integer} severity - represents message severity
  * 
