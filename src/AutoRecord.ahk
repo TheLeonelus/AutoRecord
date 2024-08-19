@@ -98,6 +98,7 @@ setSettings(rewrite := false) {
     settings_json.Seek(0, 0)
     settings_content := settings_json.Read()
     shared_obj.settings := JSON.parse(settings_content)
+    settings_json.Close()
   }
 }
 
@@ -108,6 +109,7 @@ OnExit ExitFunc
  */
 ExitFunc(ExitReason, ExitCode)
 {
+  shared_obj.info_log.Close()
   if ExitReason = "Menu" || ExitReason = "Single" || ExitCode = 1 {
     switch MsgBox("Are you sure you want to exit?", , 0x4) {
       case "Yes":
