@@ -1,12 +1,13 @@
-# Устанавливаем переменные
+# Defining constants
+Set-Location -Path "$env:Appdata"
 $AUTO_RECORD_PATH = "$env:Appdata\AutoRecord"
 $AUTO_RECORD_EXE = "$AUTO_RECORD_PATH\AutoRecord.exe"
 $DESKTOP_PATH = [System.Environment]::GetFolderPath('Desktop')
 $STARTUP_PATH = "$env:Appdata\Microsoft\Windows\Start Menu\Programs\Startup"
 $DOWNLOAD_URL = "https://github.com/theleonelus/autorecord/releases/latest/download/autorecord.zip"
-$ZIP_FILE = "$env:USERPROFILE\AutoRecord.zip"  # полный путь к текущему скрипту
+$ZIP_FILE = "$env:UserProfile\AutoRecord.zip" 
 
-# Завершаем процесс AutoRecord.exe, если он запущен
+# Stop autorecord.exe process
 $process = Get-Process -Name "AutoRecord" -ErrorAction SilentlyContinue
 if ($process) {
     Stop-Process -Name "AutoRecord" -Force
@@ -16,7 +17,7 @@ else {
     Write-Host "process AutoRecord.exe not found."
 }
 
-# Завершаем процесс obs64.exe, если он запущен
+# Stop obs64.exe process
 $process = Get-Process -Name "obs64" -ErrorAction SilentlyContinue
 if ($process) {
     Stop-Process -Name "obs64" -Force
@@ -26,28 +27,32 @@ else {
     Write-Host "process obs64.exe not found."
 }
 
-# Проверяем наличие папки AutoRecord в Roaming и удаляем ее, если она существует
+# Clean old code
 if (Test-Path -Path $AUTO_RECORD_PATH) {
-    Remove-Item -Path $AUTO_RECORD_PATH -Recurse -Force
-    Write-Host "folder $AUTO_RECORD_PATH deleted."
+    if (Test-Path -Path $AUTO_RECORD_PATH\Lib\) {
+        Remove-Item -Path $AUTO_RECORD_PATH\Lib\ -Recurse -Force
+    }
+    if (Test-Path -Path $AUTO_RECORD_PATH\ExternalLib\) {
+        Remove-Item -Path $AUTO_RECORD_PATH\ExternalLib\ -Recurse -Force
+    }
+    Remove-Item -Path $AUTO_RECORD_PATH\AutoRecord.* -Recurse -Force
 }
 
-# Загружаем последний релиз AutoRecord.zip с GitHub
+# Download latest release AutoRecord.zip from GitHub
 Write-Host "Downloading latest release of AutoRecord..."
-Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
-
-# Проверяем успешность загрузки файла
-if (-Not (Test-Path -Path $ZIP_FILE)) {
+try {
+    Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
+} catch {
     Write-Host "Failed to download AutoRecord.zip. Exiting."
     Read-Host -Prompt "Press Enter to exit"
     exit 1
-}
+} 
 
-# Распаковываем архив AutoRecord.zip
-Expand-Archive -Path $ZIP_FILE -DestinationPath $AUTO_RECORD_PATH
-Write-Host "Done"
+# Unzip AutoRecord.zip
+Expand-Archive -Path $ZIP_FILE -DestinationPath $AUTO_RECORD_PATH -Force
+Remove-Item -Path $ZIP_FILE
 
-# Загружаем конфиг obs-websocket
+# Import obs-websocket config
 $jsonConfig = '
 {
     "alerts_enabled":  false,
@@ -58,21 +63,26 @@ $jsonConfig = '
     "server_port":  4455
 }' | ConvertFrom-Json
 $jsonConfig | ConvertTo-Json | Set-Content -Path "$env:appdata\obs-studio\plugin_config\obs-websocket\config.json" -Encoding UTF8
+Write-Host "Inserting default websocket config"
 
-# Создаем ярлык на рабочем столе
+# Create shortcut on desktop
 $ws = New-Object -ComObject WScript.Shell
 $shortcut = $ws.CreateShortcut("$DESKTOP_PATH\AutoRecord.lnk")
 $shortcut.TargetPath = $AUTO_RECORD_EXE
 $shortcut.Save()
+Write-Host "Adding AutoRecord to Desktop"
 
-# Создаем ярлык AutoRecord в папке автозагрузки
+# Create AutoRecord shortcut in startup
 $shortcut = $ws.CreateShortcut("$STARTUP_PATH\AutoRecord.lnk")
 $shortcut.TargetPath = $AUTO_RECORD_EXE
 $shortcut.Save()
-# Создаем ярлык ОБС в папке автозагрузки и назначаем рабочую папку
+Write-Host "Adding AutoRecord to Startup"
+
+# Create OBS shortcut in startup
 $shortcut = $ws.CreateShortcut("$STARTUP_PATH\obs64.lnk")
 $shortcut.TargetPath = ("C:\Program Files\obs-studio\bin\64bit\obs64.exe")
 $shortcut.WorkingDirectory = ("C:\Program Files\obs-studio\bin\64bit")
 $shortcut.Save()
+Write-Host "Adding OBS to Startup"
 
 Read-Host -Prompt "Press Enter to exit"
