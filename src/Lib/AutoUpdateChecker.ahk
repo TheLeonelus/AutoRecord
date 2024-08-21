@@ -1,6 +1,7 @@
-AutoUpdateChecker(Version) {
+AutoUpdateChecker() {
+    RegExMatch(A_ScriptName, "V(.*)$", &Current_version)
     ;=============== CURRENT VERSION ==================================
-    Current_version := Version  ; Ваша текущая версия
+      ; Ваша текущая версия
     ;==================================================================
 
     repoOwner := "TheLeonelus"

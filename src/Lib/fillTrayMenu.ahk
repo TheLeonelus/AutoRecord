@@ -38,6 +38,7 @@ fillTrayMenu() {
 
     checkForUpdates(*) {
         ; Check for updates here
+        AutoUpdateChecker()
         return 0
     }
 
@@ -80,3 +81,5 @@ fillTrayMenu() {
         ExitApp(1)
     }
 }
+
+#Include <AutoUpdateChecker>

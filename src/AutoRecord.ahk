@@ -7,13 +7,9 @@ if A_IsCompiled = 0 {
   OutputDebug("AutoRecord.ahk - AutoHotkey v" A_AhkVersion " ahk_class AutoHotkey" "`n")
   OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
 }
-version := "0.0.0"
-A_ScriptName := "AutoRecord V" version
+A_ScriptName := "AutoRecord V1.2.0"
 TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
 
-
-AutoUpdateChecker(version)
-version := ""
 
 try {
   /**
@@ -50,7 +46,7 @@ try {
   setSettings()
   fillTrayMenu()
   if shared_obj.settings["check_for_update"]
-    OutputDebug("") ; Check for updates here
+    AutoUpdateChecker() ; Check for updates here
   initializeOBS()
   script := "
   (
