@@ -11,6 +11,7 @@ version := "0.0.0"
 A_ScriptName := "AutoRecord V" version
 TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
 
+
 AutoUpdateChecker(version)
 version := ""
 
