@@ -1,7 +1,8 @@
 /**
- * handle responses from server
  * @param {WebSocket} self - WebSocket instance
  * @param {String} data - received message
+ * 
+ * handle responses from server
  */
 manageOBSMessages(self, data) {
     ; write response to logs and shared_object
@@ -51,7 +52,7 @@ manageOBSMessages(self, data) {
         }
         case 5:
             if parsed_message["d"]["eventType"] = "ExitStarted" {
-                reinitialize_OBS()
+                reinitializeOBS()
             }
         Default:
             OutputDebug "received not handled message`n"
@@ -61,7 +62,7 @@ manageOBSMessages(self, data) {
 /**
  * Call this function if you need to create new connection to websocket or OBS was closed
  */
-reinitialize_OBS() {
+reinitializeOBS() {
     ; pause sub-threads
     tg_td.Pause(1)
     wa_td.Pause(1)
@@ -79,7 +80,7 @@ reinitialize_OBS() {
         WinWait("ahk_exe obs64.exe")
         logToFile("obs is opened`n")
     }
-    initialize_OBS()
+    initializeOBS()
     ; unpause sub-threads
     tg_td.Pause(0)
     wa_td.Pause(0)
@@ -88,7 +89,7 @@ reinitialize_OBS() {
 /**
  * Tries to start up OBS and connect to OBS-websocket
  */
-initialize_OBS() {
+initializeOBS() {
     ; looking for obs, if not found, trying to start it
     if !ProcessExist("obs64.exe") {
         try {
@@ -102,13 +103,12 @@ initialize_OBS() {
         }
     }
     ; try to create websocket instance and connect to server
-    obs_connection := ""
     retry_count := 0
-    while !obs_connection {
+    while !IsSet(obs_connection) {
         try {
             global obs_connection := WebSocket("ws://127.0.0.1:4455/", {
                 message: (self, data) => manageOBSMessages(self, data),
-                close: (self, status, reason) => (reinitialize_OBS(), logToFile(status ' ' reason '`n', 2)) },
+                close: (self, status, reason) => (reinitializeOBS(), logToFile(status ' ' reason '`n', 2)) },
             )
         } catch as e {
             retry_count++
