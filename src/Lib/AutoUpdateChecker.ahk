@@ -3,7 +3,8 @@
  * @param {Boolean} notify 
  */
 AutoUpdateChecker(notify := false) {
-    RegExMatch(A_ScriptName, "V(.*)$", &Current_version)
+    RegExMatch(A_ScriptName, "V(.*)$", &Match_array)
+    Current_version := Match_array[1]
     ;=============== CURRENT VERSION ==================================
       ; Ваша текущая версия
     ;==================================================================
