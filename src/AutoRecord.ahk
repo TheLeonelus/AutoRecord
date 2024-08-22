@@ -8,7 +8,7 @@ if A_IsCompiled = 0 {
   OutputDebug("A_IsCompiled = " A_IsCompiled "`n")
 }
 A_ScriptName := "AutoRecord V1.2.0"
-TrayTip("AutoRecord was initialized.", A_ScriptName, 0x4)
+TrayTip("AutoRecord was initialized.",, 0x4)
 
 
 try {

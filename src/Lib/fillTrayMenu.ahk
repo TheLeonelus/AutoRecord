@@ -38,7 +38,7 @@ fillTrayMenu() {
 
     checkForUpdates(*) {
         ; Check for updates here
-        AutoUpdateChecker()
+        AutoUpdateChecker(true)
         return 0
     }
 
