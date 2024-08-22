@@ -84,7 +84,7 @@ fillTrayMenu() {
     }
 
     GetSysColor() {
-        reg_value := RegRead("HKCU\SOFTWARE\Microsoft\Windows\DWM", "AccentColor")
+        reg_value := RegRead("HKCU\SOFTWARE\Microsoft\Windows\DWM", "ColorizationColor")
         return_value := RegExReplace(Format("{:X}", reg_value), "i).{2}(.{6})", "$1",)
         Return return_value
     }
