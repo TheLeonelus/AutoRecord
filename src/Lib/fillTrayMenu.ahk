@@ -2,23 +2,14 @@
  * generate custom tray menu
  */
 fillTrayMenu() {
-    ; Create settings submenu
-    submenu_settings := Menu()
-    submenu_array := ["Show prompt to change label (TG)", "Show prompt to change label (WA)", "Check for updates at start"]
-    settings_array := [] ; keep setting keys to access it later
-    for key, value in shared_obj.settings {
-        settings_array.Push(key)
-        submenu_settings.Add(submenu_array[A_Index], settingToggle)
-        value ? submenu_settings.Check(submenu_array[A_Index]) : ""
-    }
-    submenu_array := unset
     ; remove default tray menu and create new one
     tray_menu := A_TrayMenu
     tray_menu.Delete()
     if !A_IsCompiled
         tray_menu.AddStandard() ; for debugging
-    tray_menu.Add("Settings", submenu_settings)
-    tray_menu.Add("Open logs", logOpen)
+    tray_menu.Add("Settings", gui_settings)
+    tray_menu.Add() ; separator
+    tray_menu.Add("Open folder logs", logOpen)
     tray_menu.Add("Check for updates", checkForUpdates)
     tray_menu.Add("About", about)
     tray_menu.Add() ; separator
@@ -28,6 +19,41 @@ fillTrayMenu() {
     /**
      * open logs file
      */
+    gui_settings(*) {
+        ; Create settings GUI
+        settings := Gui()
+        settings.SetFont("s10 Q5 bold", "Arial")
+        settings.Add("Text", "WP+400 Center", "Settings")
+        settings.Add("Progress", "w400 h5 c" GetSysColor(), 100)
+        settings.SetFont("s10 Q5 norm", "Arial")
+        checkbox_array := [
+            "Check for updates",
+            "Telegram",
+            "Whatsapp"
+        ]
+        for key, value in shared_obj.settings {
+            switch A_Index {
+                case 1:
+                    settings.Add("Text", "Section",
+                        "Toggle check for updates at the start of the application")
+                    key := settings.AddCheckBox("Checked" value " v" key, checkbox_array[A_Index])
+                    key.OnEvent("Click", ProcessUserInput)
+                    settings.Add("Text", "Section",
+                        "`nToggle renaming of a record at the end of the recording for:")
+                default:
+                    key := settings.AddCheckBox("Checked" value " v" key, checkbox_array[A_Index])
+                    key.OnEvent("Click", ProcessUserInput)
+
+            }
+
+        }
+        settings.Show("AutoSize Center")
+        ProcessUserInput(GuiCtrlObj, *) {
+            shared_obj.settings[GuiCtrlObj.Name] := GuiCtrlObj.Value
+            setSettings(true)
+        }
+    }
+
     logOpen(*) {
         chars := DllCall("GetFinalPathNameByHandle", "Ptr", shared_obj.info_log.Handle, "Ptr", 0, "UInt", 0, "UInt", 0)
         VarSetStrCapacity(&filePath, chars)
@@ -43,12 +69,6 @@ fillTrayMenu() {
     }
 
     about(*) {
-        GetSysColor()
-        {
-            reg_value := RegRead("HKCU\SOFTWARE\Microsoft\Windows\DWM", "AccentColor")
-            return_value := RegExReplace(Format("{:X}", reg_value), "i).{2}(.{6})", "$1",)
-            Return return_value
-        }
         about_menu := Gui()
         about_menu.SetFont("s10 Q5", "Arial")
         about_menu.Add("Text", "WP+250", A_ScriptName "`nAutomating calls` recording from Telegram and Whatsapp Messengers")
@@ -62,18 +82,13 @@ fillTrayMenu() {
         )')
         about_menu.Show("AutoSize Center")
     }
-    /**
-     * @param {String} ItemName 
-     * @param {Number} ItemPos 
-     * @param {Menu} MenuObject 
-     * 
-     * change setting value and save it
-     */
-    settingToggle(ItemName, ItemPos, MenuObject) {
-        shared_obj.settings[settings_array[ItemPos]] := Abs(shared_obj.settings[settings_array[ItemPos]] - 1)
-        setSettings(true)
-        MenuObject.ToggleCheck(ItemName)
+
+    GetSysColor() {
+        reg_value := RegRead("HKCU\SOFTWARE\Microsoft\Windows\DWM", "AccentColor")
+        return_value := RegExReplace(Format("{:X}", reg_value), "i).{2}(.{6})", "$1",)
+        Return return_value
     }
+
     menuReload(*) {
         Reload()
     }

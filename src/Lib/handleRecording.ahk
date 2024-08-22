@@ -75,8 +75,7 @@ handleRecording(id, record_name, setting_label := 1) {
                 gui_prompt.Add("Button", "YP x400 default", "Save").OnEvent("Click", ProcessUserInput)
                 gui_prompt.OnEvent("Close", ProcessUserInput)
                 gui_prompt.Show("AutoSize Center")
-                ProcessUserInput(*)
-                {
+                ProcessUserInput(*) {
                     Saved := gui_prompt.Submit()  ; Save the contents of named controls into an object.
                     if RegExMatch(Saved.inputName, 'i)^((?>(?!CON)(?!PRN)(?!AUX)(?!NUL)(?!COM\d?)(?!LPT\d?)(?![\<\>\:\“\/\|\?\*\"]).)*)$') != 0 {
                         try
