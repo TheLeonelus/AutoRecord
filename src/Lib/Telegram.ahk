@@ -22,6 +22,7 @@ Loop
             try {
                 telegram_window_list := WinGetList("ahk_exe Telegram.exe")
                 len := telegram_window_list.Length
+                toLog := "other "
                 if len > 1 {
                     ; Filtering Telegram windows with reversed loop, thus .RemoveAt produce expected behaviour
                     loop len {
@@ -33,7 +34,7 @@ Loop
                             telegram_window_list.RemoveAt(index)
                         }
                     }
-                    OutputDebug("TG id: " telegram_id " | ")
+                    OutputDebug("TG id: " telegram_id " | " toLog)
                     ; Label for exiting outer Loop
                     languageDefining:
                     for window in telegram_window_list {
@@ -57,7 +58,7 @@ Loop
                     }
                 }
             } catch as e {
-                logToFile(e.message, 2)
+                logToFile(e.message "`n" e.What "`n" e.Line, 2)
             }
         } else {
             ; Waiting for Telegram to be opened again
