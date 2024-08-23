@@ -90,10 +90,12 @@ reinitializeOBS() {
  * Tries to start up OBS and connect to OBS-websocket
  */
 initializeOBS() {
+    DetectHiddenWindows True
+    SetTitleMatchMode 2
     ; looking for obs, if not found, trying to start it
     if !ProcessExist("obs64.exe") {
         try {
-            Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Program Files\obs-studio\bin\64bit\")
+            Run("C:\Program Files\obs-studio\bin\64bit\obs64.exe --disable-shutdown-check", "C:\Program Files\obs-studio\bin\64bit\")
             logToFile("OBS wasn't found, trying to start it up")
             WinWait("ahk_exe obs64.exe", , shared_obj.check_delay * 20)
         }
