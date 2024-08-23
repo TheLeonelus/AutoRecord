@@ -19,42 +19,46 @@ Loop
         DetectHiddenWindows(true) ; Telegram hides main window instead of closing
         if WinExist("ahk_id " telegram_id) != 0 { ; Check if Telegram is still opened
             DetectHiddenWindows(false) ; Telegram creates some weird hidden windows
-            telegram_window_list := WinGetList("ahk_exe Telegram.exe")
-            len := telegram_window_list.Length
-            if len > 1 {
+            try {
+                telegram_window_list := WinGetList("ahk_exe Telegram.exe")
+                len := telegram_window_list.Length
                 toLog := "other "
-                ; Filtering Telegram windows with reversed loop, thus .RemoveAt produce expected behaviour
-                loop len {
-                    index := len - A_Index + 1
-                    window_class := WinGetClass("ahk_id " telegram_window_list[index])
-                    toLog := toLog " | " telegram_window_list[index] " | " window_class
-                    ; remove windows with wrong class/id from array
-                    if (telegram_window_list[index] = telegram_id || StrCompare(window_class, "Qt51513QWindowIcon", false)) {
-                        telegram_window_list.RemoveAt(index)
-                    }
-                }
-                OutputDebug("TG id: " telegram_id " | " toLog)
-                ; Label for exiting outer Loop
-                languageDefining:
-                for window in telegram_window_list {
-                    title := WinGetTitle("ahk_id" window)
-                    if chosen_language = "" {
-                        ; If language is unknown - look for all languages and try to define it
-                        for language in languages_array {
-                            if InStr(title, language) != 0 {
-                                global chosen_language := language
-                                logToFile("Telegram's language is defined as " chosen_language)
-                                break languageDefining
-                            }
+                if len > 1 {
+                    ; Filtering Telegram windows with reversed loop, thus .RemoveAt produce expected behaviour
+                    loop len {
+                        index := len - A_Index + 1
+                        window_class := WinGetClass("ahk_id " telegram_window_list[index])
+                        toLog := toLog " | " telegram_window_list[index] " | " window_class
+                        ; remove windows with wrong class/id from array
+                        if (telegram_window_list[index] = telegram_id || StrCompare(window_class, "Qt51513QWindowIcon", false)) {
+                            telegram_window_list.RemoveAt(index)
                         }
-                        if RegExMatch(title, "^((?>(?!TelegramDesktop).)*)$")
-                            handleRecording(window, title, shared_obj.settings["show_tg_label"])
-                    } else {
-                        ; If language is defined - do simpler validation
-                        if RegExMatch(title, "^((?>(?!" chosen_language ")(?!TelegramDesktop).)*)$")
-                            handleRecording(window, title, shared_obj.settings["show_tg_label"])
+                    }
+                    OutputDebug("TG id: " telegram_id " | " toLog)
+                    ; Label for exiting outer Loop
+                    languageDefining:
+                    for window in telegram_window_list {
+                        title := WinGetTitle("ahk_id" window)
+                        if chosen_language = "" {
+                            ; If language is unknown - look for all languages and try to define it
+                            for language in languages_array {
+                                if InStr(title, language) != 0 {
+                                    global chosen_language := language
+                                    logToFile("Telegram's language is defined as " chosen_language)
+                                    break languageDefining
+                                }
+                            }
+                            if RegExMatch(title, "^((?>(?!TelegramDesktop).)*)$")
+                                handleRecording(window, title, shared_obj.settings["show_tg_label"])
+                        } else {
+                            ; If language is defined - do simpler validation
+                            if RegExMatch(title, "^((?>(?!" chosen_language ")(?!TelegramDesktop).)*)$")
+                                handleRecording(window, title, shared_obj.settings["show_tg_label"])
+                        }
                     }
                 }
+            } catch as e {
+                logToFile(e.message "`n" e.What "`n" e.Line, 2)
             }
         } else {
             ; Waiting for Telegram to be opened again

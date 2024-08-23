@@ -2,9 +2,12 @@
 #SingleInstance Force
 Persistent
 
-TraySetIcon("*", , true)
-A_ScriptName := "AutoRecord V1.1"
-TrayTip(A_ScriptName " was initialized.", , 0x4)
+if A_IsCompiled = 0
+  SetWorkingDir(A_AppData "\AutoRecord")
+
+A_ScriptName := "AutoRecord V1.2.0"
+TrayTip("AutoRecord was initialized.", , 0x4)
+
 
 try {
   /**
@@ -32,16 +35,16 @@ try {
     info_log: openLogFile(),
     record_status: 0,
     script_hwnd: A_ScriptHwnd,
-    settings: Map(
+    settings: Map( ; Using Map to be consistent, because that how JSON.parse() return
+      "check_for_update", 1,
       "show_tg_label", 1,
       "show_wa_label", 1,
-      "check_for_update", 1
     )
   }
   setSettings()
   fillTrayMenu()
   if shared_obj.settings["check_for_update"]
-    OutputDebug("") ; Check for updates here
+    AutoUpdateChecker() ; Check for updates here
   initializeOBS()
   script := "
   (
@@ -51,7 +54,7 @@ try {
   tg_td := Worker(script "`n#Include <Telegram>", , A_ScriptName " | Telegram")
   ; Thread for Whatsapp module
   wa_td := Worker(script "`n#Include <Whatsapp>", , A_ScriptName " | Whatsapp")
-  script := unset
+  script := unset ; free variable
 
   OnMessage(0xFF01, SendNotification)
   OnMessage(0xFF02, sendOBSCommand)
@@ -68,7 +71,6 @@ catch as e {
  * if it's size exceeds limit - replace it to .old and create the new one.
  */
 openLogFile() {
-  OutputDebug(A_WorkingDir "`n")
   log_path := A_ScriptDir "\info.log"
   old_log_path := A_ScriptDir "\info.log.old"
   OutputDebug(FileExist(log_path) " flags | size " (FileExist(log_path) ? FileGetSize(log_path, "K") "`n" : ""))
@@ -89,16 +91,23 @@ openLogFile() {
  */
 setSettings(rewrite := false) {
   settings_json_path := A_ScriptDir "\settings.json"
-  if !FileExist(settings_json_path) || rewrite {
-    settings_json := FileOpen(settings_json_path, "w")
-    settings_json.Write(JSON.stringify(shared_obj.settings))
-    settings_json.Close()
-  } else {
-    settings_json := FileOpen(settings_json_path, "a -d")
-    settings_json.Seek(0, 0)
-    settings_content := settings_json.Read()
-    shared_obj.settings := JSON.parse(settings_content)
-    settings_json.Close()
+  try {
+
+    if !FileExist(settings_json_path) || rewrite {
+      OutputDebug(JSON.stringify(shared_obj.settings) "`n")
+      settings_json := FileOpen(settings_json_path, "w")
+      settings_json.Write(JSON.stringify(shared_obj.settings))
+      settings_json.Close()
+    } else {
+      settings_json := FileOpen(settings_json_path, "a -d")
+      settings_json.Seek(0, 0)
+      settings_content := settings_json.Read()
+      shared_obj.settings := JSON.parse(settings_content)
+      settings_json.Close()
+    }
+  } catch as e{
+    FileDelete(settings_json_path)
+    logToFile(e.Message, 2)
   }
 }
 
@@ -126,3 +135,4 @@ ExitFunc(ExitReason, ExitCode)
 #Include <logToFile>
 #Include <ReceiveCallbacks>
 #Include <fillTrayMenu>
+#Include <AutoUpdateChecker>

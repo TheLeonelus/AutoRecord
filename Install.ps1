@@ -27,6 +27,12 @@ else {
     Write-Host "process obs64.exe not found."
 }
 
+# Загружаем последний релиз AutoRecord.zip с GitHub
+Write-Host "Downloading latest release of AutoRecord..."
+Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $ZIP_FILE -UseBasicParsing
+
+(Invoke-WebRequest https://raw.githubusercontent.com/TheLeonelus/AutoRecord/main/install.bat).Content | Out-File -FilePath $AUTO_RECORD_PATH\install.bat -Encoding UTF8
+
 # Clean old code
 if (Test-Path -Path $AUTO_RECORD_PATH) {
     if (Test-Path -Path $AUTO_RECORD_PATH\Lib\) {
