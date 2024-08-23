@@ -28,8 +28,8 @@ AutoUpdateChecker(notify := false) {
 
             if (result = "Yes")
             {
-                Try
-                    Run "\install.bat"
+                    Run(A_WorkingDir "\install.bat")
+                    ExitApp()
             }
         }
         else if notify
