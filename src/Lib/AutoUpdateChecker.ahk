@@ -5,9 +5,6 @@
 AutoUpdateChecker(notify := false) {
     RegExMatch(A_ScriptName, "V(.*)$", &Match_array)
     Current_version := Match_array[1]
-    ;=============== CURRENT VERSION ==================================
-      ; Ваша текущая версия
-    ;==================================================================
 
     repoOwner := "TheLeonelus"
     repoName := "AutoRecord"
@@ -20,6 +17,10 @@ AutoUpdateChecker(notify := false) {
         WinHttpReq.Send()
         data := Json.parse(WinHttpReq.ResponseText)
         latest_version := data["tag_name"]
+
+        ; Delete prefix 'v'
+        if (SubStr(latest_version, 1, 1) = "v")
+            latest_version := SubStr(latest_version, 2)
 
         if (Current_version != latest_version) && (latest_version != "")
         {
