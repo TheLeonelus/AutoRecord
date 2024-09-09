@@ -51,9 +51,9 @@ try {
   Alias(shared_obj:={}, ahkGetVar('shared_obj', 1, A_MainThreadID))
   )"
   ; Thread for Telegram module
-  tg_td := Worker(script "`n#Include <Telegram>", , A_ScriptName " | Telegram")
+  global tg_td := Worker(script "`n#Include <Telegram>", , A_ScriptName " | Telegram")
   ; Thread for Whatsapp module
-  wa_td := Worker(script "`n#Include <Whatsapp>", , A_ScriptName " | Whatsapp")
+  global wa_td := Worker(script "`n#Include <Whatsapp>", , A_ScriptName " | Whatsapp")
   script := unset ; free variable
 
   OnMessage(0xFF01, SendNotification)

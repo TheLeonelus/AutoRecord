@@ -5,57 +5,58 @@
  * handle responses from server
  */
 manageOBSMessages(self, data) {
-    ; write response to logs and shared_object
-    logToFile("Received: " data)
-    shared_obj.last_message := data
-    parsed_message := JSON.parse(data)
-    switch parsed_message["op"]
-    {
-        case 0:
-            ; hello
-            response := Format("
-        (
-        {
-        "d": {
-        "rpcVersion": {1:s}
-        },
-        "op": 1
-        }
-        )", parsed_message["d"]["rpcVersion"])
-            Sleep shared_obj.check_delay
-            self.sendText(response)
-            logToFile("Sent: " response)
-        case 2:
-            ; identify
-            OutputDebug "identified`n"
-            Sleep shared_obj.check_delay
-            OutputDebug "Setting record output name`n"
-            request := "
-        (
-        {
-            "op": 6,
-            "d": {
-                "requestType": "SetProfileParameter",
-                "requestId": "profile_args_set",
-                "requestData": {
-                    "parameterCategory": "Output",
-                    "parameterName": "FilenameFormatting",
-                    "parameterValue": "%DD-%MM %hh-%mm-%ss"
+    try {
+        ; write response to logs and shared_object
+        logToFile("Received: " data)
+        shared_obj.last_message := data
+        parsed_message := JSON.parse(data)
+        switch parsed_message["op"] {
+            case 0:
+                ; hello
+                response := Format("
+                (
+                {
+                "d": {
+                "rpcVersion": {1:s}
+                },
+                "op": 1
                 }
-            }
+                )", parsed_message["d"]["rpcVersion"])
+                Sleep shared_obj.check_delay
+                self.sendText(response)
+                logToFile("Sent: " response)
+            case 2:
+                ; identify
+                OutputDebug "identified`n"
+                Sleep shared_obj.check_delay
+                OutputDebug "Setting record output name`n"
+                request := "
+                (
+                {
+                    "op": 6,
+                    "d": {
+                        "requestType": "SetProfileParameter",
+                        "requestId": "profile_args_set",
+                        "requestData": {
+                            "parameterCategory": "Output",
+                            "parameterName": "FilenameFormatting",
+                            "parameterValue": "%DD-%MM %hh-%mm-%ss"
+                        }
+                    }
+                }
+                )"
+                self.sendText(request)
+            case 7:
+                shared_obj.last_request_response := data
+
+            case 5:
+                if parsed_message["d"]["eventType"] = "ExitStarted"
+                    reinitializeOBS()
+            Default:
+                OutputDebug "received not handled message`n"
         }
-        )"
-            self.sendText(request)
-        case 7:
-        {
-            shared_obj.last_request_response := data
-        }
-        case 5:
-            if parsed_message["d"]["eventType"] = "ExitStarted" {
-                reinitializeOBS()
-            }
-        Default:
-            OutputDebug "received not handled message`n"
+    } catch as e {
+        logToFile(e, 3)
     }
 }
 
