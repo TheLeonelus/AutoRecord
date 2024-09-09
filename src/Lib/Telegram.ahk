@@ -1,7 +1,7 @@
 ﻿#NoTrayIcon
 logToFile("Telegram module is loaded.")
 
-telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51513QWindowIcon")
+telegram_id := WinWait("ahk_exe Telegram.exe ahk_class Qt51515QWindowIcon")
 /**
  * Stores `media viewer` window titles, because we can't distinguish it from window call otherwise
  * 
@@ -30,7 +30,7 @@ Loop
                         window_class := WinGetClass("ahk_id " telegram_window_list[index])
                         toLog := toLog " | " telegram_window_list[index] " | " window_class
                         ; remove windows with wrong class/id from array
-                        if (telegram_window_list[index] = telegram_id || StrCompare(window_class, "Qt51513QWindowIcon", false)) {
+                        if (telegram_window_list[index] = telegram_id || StrCompare(window_class, "Qt51515QWindowIcon", false)) {
                             telegram_window_list.RemoveAt(index)
                         }
                     }
