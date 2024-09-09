@@ -5,7 +5,7 @@ Persistent
 if A_IsCompiled = 0
   SetWorkingDir(A_AppData "\AutoRecord")
 
-A_ScriptName := "AutoRecord V1.2.0"
+A_ScriptName := "AutoRecord V1.2.1"
 TrayTip("AutoRecord was initialized.", , 0x4)
 
 
